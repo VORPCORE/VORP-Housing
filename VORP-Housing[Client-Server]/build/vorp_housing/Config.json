@@ -1,0 +1,16 @@
+{
+  "defaultlang": "Es",
+
+  "Houses": [
+    {
+      "Name": "Example",
+      "Price": 500.0,
+      //Some
+      "Doors": [
+
+      ]
+    }
+
+
+  ]
+}
