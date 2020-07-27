@@ -3,11 +3,12 @@
 
   "Houses": [
     {
-      "Name": "Example",
+      "Id": 34306,
+      "InteriorName": "br_tre_house_cheat01",
+      "Name": "Casita de Madera",
       "Price": 500.0,
-      //Some
       "Doors": [
-
+        [ 1115.8677978516, -1989.7192382813, 54.376285552979, 115.13194274902 ]
       ]
     }
 

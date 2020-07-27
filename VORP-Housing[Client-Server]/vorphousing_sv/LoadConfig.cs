@@ -49,6 +49,8 @@ namespace vorphousing_sv
                 Debug.WriteLine($"{API.GetCurrentResourceName()}: Config.json Not Found");
             }
             isConfigLoaded = true;
+
+            vorp_housing_sv_init.LoadHouses();
         }
 
         private async void getConfig([FromSource]Player source)

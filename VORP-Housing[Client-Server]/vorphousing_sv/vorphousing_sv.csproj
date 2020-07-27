@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="House.cs" />
     <Compile Include="LoadConfig.cs" />
     <Compile Include="vorp_housing_sv_init.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
