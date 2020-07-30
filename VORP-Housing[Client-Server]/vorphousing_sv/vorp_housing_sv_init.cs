@@ -1,4 +1,5 @@
 ﻿using CitizenFX.Core;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,28 +14,34 @@ namespace vorphousing_sv
 
         public vorp_housing_sv_init()
         {
-            EventHandlers["playerConnecting"] += new Action<Player, string, dynamic, dynamic>(OnPlayerConnecting);
-        }
-
-        private void OnPlayerConnecting([FromSource]Player player, string playerName, dynamic setKickReason, dynamic deferrals)
-        {
-            string sid = "steam:" + player.Identifiers["steam"];
-            Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier LIKE ?", new string[] { sid.ToString() }, new Action<dynamic>((result) =>
+            TriggerEvent("vorp:addNewCallBack", "getHouses", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
             {
+                dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
                 if (result.Count != 0)
                 {
-                    int houseId = result.id;
-                    string furniture = "{}";
-                    if (!String.IsNullOrEmpty(result[0].inventory))
+                    foreach (var r in result)
                     {
-                        furniture = result[0].furniture;
+                        int houseId = result.id;
+                        string furniture = "{}";
+                        if (!String.IsNullOrEmpty(result[0].furniture))
+                        {
+                            furniture = result[0].furniture;
+                        }
+                        Houses[houseId].Identifier = result[0].identifier;
+                        Houses[houseId].Furniture = furniture;
+                        Houses[houseId].IsOpen = Convert.ToBoolean(result[0].open);
                     }
-                    Houses[houseId].Identifier = sid;
-                    Houses[houseId].Furtniture = furniture;
-                    Houses[houseId].IsOpen = Convert.ToBoolean(result[0].open);
+                    string houses = JsonConvert.SerializeObject(Houses);
+                    cb(houses);
+                }
+                else
+                {
+                    string houses = JsonConvert.SerializeObject(Houses);
+                    cb(houses);
                 }
             }));
         }
+
 
         public static async Task LoadHouses()
         {
@@ -42,6 +49,7 @@ namespace vorphousing_sv
             {
                 Houses.Add(house["Id"].ToObject<int>(), new House(house["Id"].ToObject<int>(), house["InteriorName"].ToString(), null, house["Price"].ToObject<double>(), null, false));
             }
+
         }
 
     }

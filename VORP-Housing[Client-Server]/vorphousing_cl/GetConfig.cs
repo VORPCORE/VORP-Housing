@@ -39,6 +39,8 @@ namespace vorphousing_cl
 
 
             isLoaded = true;
+
+            vorphousing_cl_init.LoadHouses();
         }
     }
 }
