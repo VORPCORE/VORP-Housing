@@ -1,17 +1,22 @@
 {
   "defaultlang": "Es",
 
+  "ItemsBlacklist": [
+    "anithing"
+  ],
+
   "Houses": [
     {
       "Id": 34306,
       "InteriorName": "br_tre_house_cheat01",
       "Name": "Casita de Madera",
       "Price": 500.0,
+      "DoorsStatus": [ 1115.467, -1989.276, 55.7 ],
       "Doors": [
         [ 1115.8677978516, -1989.7192382813, 54.376285552979, 115.13194274902 ]
-      ]
+      ],
+      "Inventory": [ 1119.963, -1988.04, 54.7, 2.0 ],
+      "MaxWeight": 50
     }
-
-
   ]
 }
