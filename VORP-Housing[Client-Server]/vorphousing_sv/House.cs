@@ -9,20 +9,22 @@ namespace vorphousing_sv
 {
     public class House : BaseScript
     {
-        int id;
+        uint id;
         string interior;
         string identifier;
+        int charidentifier;
         double price;
         string furniture;
         bool isOpen;
         bool isOwner;
         int maxWeight;
 
-        public House(int id, string interior, string identifier, double price, string furniture, bool isOpen, int maxWeight)
+        public House(uint id, string interior, string identifier, int charidentifier, double price, string furniture, bool isOpen, int maxWeight)
         {
             this.Id = id;
             this.Interior = interior;
             this.Identifier = identifier;
+            this.CharIdentifier = charidentifier;
             this.Price = price;
             this.Furniture = furniture;
             this.isOpen = isOpen;
@@ -30,9 +32,10 @@ namespace vorphousing_sv
             this.maxWeight = maxWeight;
         }
 
-        public int Id { get => id; set => id = value; }
+        public uint Id { get => id; set => id = value; }
         public string Interior { get => interior; set => interior = value; }
         public string Identifier { get => identifier; set => identifier = value; }
+        public int CharIdentifier { get => charidentifier; set => charidentifier = value; }
         public double Price { get => price; set => price = value; }
         public string Furniture { get => furniture; set => furniture = value; }
         public bool IsOpen { get => isOpen; set => isOpen = value; }

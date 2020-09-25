@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `housing`;
 CREATE TABLE `housing`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `identifier` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL,
+  `charidentifier` int(11) NOT NULL,
   `inventory` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   `furniture` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL,
   PRIMARY KEY (`id`) USING BTREE

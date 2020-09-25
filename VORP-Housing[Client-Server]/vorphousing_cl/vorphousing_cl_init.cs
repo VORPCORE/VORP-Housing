@@ -42,7 +42,32 @@ namespace vorphousing_cl
 
             TriggerEvent("vorp:ExecuteServerCallBack", "getHouses", new Action<string>(async (json) => {
                 Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
+                SetBlips();
             }), "");
+        }
+
+        public static async Task SetBlips()
+        {
+            //249721687
+            foreach (var h in GetConfig.Config["Houses"])
+            {
+                int _blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, h["DoorsStatus"][0].ToObject<float>(), h["DoorsStatus"][1].ToObject<float>(), h["DoorsStatus"][2].ToObject<float>());
+                if (Houses.ContainsKey(h["Id"].ToObject<int>()))
+                {
+                    if ((String.IsNullOrEmpty(Houses[h["Id"].ToObject<int>()].Identifier)))
+                    {
+                        Function.Call((Hash)0x74F74D3207ED525C, _blip, 249721687, 1);
+                    }
+                    else
+                    {
+                        Function.Call((Hash)0x74F74D3207ED525C, _blip, -2024635066, 1);
+                    }
+                    Function.Call((Hash)0x9CB1A1623062F402, _blip, h["Name"].ToString());
+
+                    Function.Call((Hash)0x174D0AAB11CED739, h["Id"].ToObject<int>(), h["InteriorName"].ToString()); // Load Entity Interior
+                }
+
+            }
         }
 
         [Tick]
@@ -94,7 +119,7 @@ namespace vorphousing_cl
                 {
                     Vector3 pCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
 
-                    if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, doorStatusX, doorStatusY, doorStatusZ, true) < 2.0f)
+                    if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, doorStatusX, doorStatusY, doorStatusZ, true) < 2.5f)
                     {
                         if (String.IsNullOrEmpty(Houses[houseId].Identifier))
                         {

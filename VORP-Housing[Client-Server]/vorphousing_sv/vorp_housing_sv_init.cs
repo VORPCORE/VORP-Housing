@@ -10,12 +10,12 @@ namespace vorphousing_sv
 {
     public class vorp_housing_sv_init : BaseScript
     {
-        public static Dictionary<int, House> Houses = new Dictionary<int, House>();
+        public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
 
         public vorp_housing_sv_init()
         {
-            EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, int, double>(BuyHouse);
-            EventHandlers["vorp_housing:changeDoorState"] += new Action<int, bool>(ChangeDoorState);
+            EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
+            EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
 
             TriggerEvent("vorp:addNewCallBack", "getHouses", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
             {
@@ -27,20 +27,22 @@ namespace vorphousing_sv
                     Player _source = PL[source];
                     string sid = "steam:" + _source.Identifiers["steam"];
 
-                    Dictionary<int, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
+                    Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
 
                     if (result.Count != 0)
                     {
                         foreach (var r in result)
                         {
-                            int houseId = r.id;
+                            uint houseId = r.id;
                             string identifier = r.identifier;
+                            int charidentifier = r.charidentifier;
                             string furniture = "{}";
                             if (!String.IsNullOrEmpty(r.furniture))
                             {
                                 furniture = r.furniture;
                             }
                             _Houses[houseId].Identifier = identifier;
+                            _Houses[houseId].CharIdentifier = charidentifier;
                             _Houses[houseId].Furniture = furniture;
                             _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
 
@@ -67,13 +69,13 @@ namespace vorphousing_sv
             }));
         }
 
-        public void ChangeDoorState(int houseId, bool state)
+        public void ChangeDoorState(uint houseId, bool state)
         {
             Houses[houseId].SetOpen(state);
             TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
         }
 
-        public void BuyHouse([FromSource]Player source, int houseId, double price)
+        public void BuyHouse([FromSource]Player source, uint houseId, double price)
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
@@ -99,7 +101,7 @@ namespace vorphousing_sv
         {
             foreach (var house in LoadConfig.Config["Houses"])
             {
-                Houses.Add(house["Id"].ToObject<int>(), new House(house["Id"].ToObject<int>(), house["InteriorName"].ToString(), null, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
+                Houses.Add(house["Id"].ToObject<uint>(), new House(house["Id"].ToObject<uint>(), house["InteriorName"].ToString(), null, -1, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
             }
 
         }

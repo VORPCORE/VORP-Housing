@@ -150,7 +150,7 @@ namespace vorphousing_sv
                 return;
             }
 
-            int houseId = data["house"].ToObject<int>();
+            uint houseId = data["house"].ToObject<uint>();
 
             string type = data["item"]["type"].ToString();
             if (type.Contains("item_weapon"))
