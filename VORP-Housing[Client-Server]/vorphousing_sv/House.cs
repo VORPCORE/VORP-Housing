@@ -42,10 +42,11 @@ namespace vorphousing_sv
         public bool IsOwner { get => isOwner; set => isOwner = value; }
         public int MaxWeight { get => maxWeight; set => maxWeight = value; }
 
-        public void BuyHouse(string identifier)
+        public void BuyHouse(string identifier, int charid)
         {
             this.identifier = identifier;
-            Exports["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, furniture) VALUES (?, ?, ?)", new object[] { id, identifier, "{}" });
+            this.charidentifier = charid;
+            Exports["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { id, identifier, charid, "{}" });
         }
 
         public void SetOpen(bool open)

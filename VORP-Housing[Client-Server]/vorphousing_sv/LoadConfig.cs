@@ -50,7 +50,7 @@ namespace vorphousing_sv
             }
             isConfigLoaded = true;
 
-            vorp_housing_sv_init.LoadHouses();
+            vorp_housing_sv_init.LoadAll();
         }
 
         private async void getConfig([FromSource]Player source)

@@ -10,12 +10,65 @@ namespace vorphousing_sv
 {
     public class vorp_housing_sv_init : BaseScript
     {
-        public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
 
+        public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
+        public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
+
+        public static dynamic VORPCORE;
+        
         public vorp_housing_sv_init()
         {
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
+            EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
+
+            TriggerEvent("getCore", new Action<dynamic>((dic) =>
+            {
+                VORPCORE = dic;
+            }));
+
+            TriggerEvent("vorp:addNewCallBack", "getRooms", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
+            {
+                try
+                {
+                    dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
+                    int charIdentifier = UserCharacter.charIdentifier;
+
+                    PlayerList PL = new PlayerList();
+                    Player _source = PL[source];
+                    string sid = "steam:" + _source.Identifiers["steam"];
+
+                    dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+
+                    Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
+
+                    if (result.Count != 0)
+                    {
+                        foreach (var r in result)
+                        {
+                            int roomId = r.interiorId;
+                            string identifier = r.identifier;
+                            int charidentifier = r.charidentifier;
+                            _Rooms[roomId].Identifier = identifier;
+                            _Rooms[roomId].CharIdentifier = charidentifier;
+
+                        }
+                        string rooms = JsonConvert.SerializeObject(_Rooms);
+                        cb(rooms);
+                    }
+                    else
+                    {
+                        string rooms = JsonConvert.SerializeObject(_Rooms);
+                        cb(rooms);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+
+            }));
+
 
             TriggerEvent("vorp:addNewCallBack", "getHouses", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
             {
@@ -65,8 +118,10 @@ namespace vorphousing_sv
                 {
                     Console.WriteLine(e.Message);
                 }
-               
+
             }));
+
+
         }
 
         public void ChangeDoorState(uint houseId, bool state)
@@ -79,29 +134,54 @@ namespace vorphousing_sv
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
-            TriggerEvent("vorp:getCharacter", _source, new Action<dynamic>((user) =>
+            dynamic UserCharacter = VORPCORE.getUser(_source).getUsedCharacter;
+            int charIdentifier = UserCharacter.charIdentifier;
+            double money = UserCharacter.money;
+            if (money >= price)
             {
-                double money = user.money;
-                if (money >= price)
-                {
-                    TriggerEvent("vorp:removeMoney", _source, 0, price);
-                    Houses[houseId].BuyHouse(sid);
-                    TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
-                    source.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
-                    source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
-                }
-                else
-                {
-                    source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["NoMoney"], 4000);
-                }
-            }));
+                TriggerEvent("vorp:removeMoney", _source, 0, price);
+                Houses[houseId].BuyHouse(sid, charIdentifier);
+                TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
+                source.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
+                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
+            }
+            else
+            {
+                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["NoMoney"], 4000);
+            }
         }
 
-        public static async Task LoadHouses()
+        public async void BuyRoom([FromSource] Player source, int roomId, double price)
+        {
+            string sid = "steam:" + source.Identifiers["steam"];
+            int _source = int.Parse(source.Handle);
+            dynamic UserCharacter = VORPCORE.getUser(_source).getUsedCharacter;
+            int charIdentifier = UserCharacter.charIdentifier;
+            double money = UserCharacter.money;
+            if (money >= price)
+            {
+                TriggerEvent("vorp:removeMoney", _source, 0, price);
+                Exports["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
+                TriggerClientEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
+                //source.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
+                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
+            }
+            else
+            {
+                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["NoMoney"], 4000);
+            }
+        }
+
+        public static async Task LoadAll()
         {
             foreach (var house in LoadConfig.Config["Houses"])
             {
                 Houses.Add(house["Id"].ToObject<uint>(), new House(house["Id"].ToObject<uint>(), house["InteriorName"].ToString(), null, -1, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
+            }
+
+            foreach (var room in LoadConfig.Config["Rooms"])
+            {
+                Rooms.Add(room["Id"].ToObject<int>(), new Room(room["Id"].ToObject<int>(), null, -1, room["Price"].ToObject<double>(), room["MaxWeight"].ToObject<int>()));
             }
 
         }
