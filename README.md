@@ -1,5 +1,5 @@
 # VORP-Housing
-🐎 House & rented rooms script
+🏠 House & rented rooms script
 
 ## Requirements
 - [VORP-Core](https://github.com/VORPCORE/VORP-Core/releases)
