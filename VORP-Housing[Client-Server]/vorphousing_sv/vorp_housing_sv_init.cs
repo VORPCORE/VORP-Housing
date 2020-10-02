@@ -162,7 +162,7 @@ namespace vorphousing_sv
             {
                 TriggerEvent("vorp:removeMoney", _source, 0, price);
                 Exports["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
-                TriggerClientEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
+                source.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
                 //source.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
                 source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
             }
