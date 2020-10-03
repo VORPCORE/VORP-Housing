@@ -577,7 +577,7 @@ namespace vorphousing_sv
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subWeapon", _source, weapId);
-                                Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject();
 
