@@ -86,7 +86,7 @@ namespace vorphousing_sv
                     {
                         foreach (var r in result)
                         {
-                            uint houseId = r.id;
+                            uint houseId = ConvertValue(r.id.ToString());
                             string identifier = r.identifier;
                             int charidentifier = r.charidentifier;
                             string furniture = "{}";
@@ -184,6 +184,22 @@ namespace vorphousing_sv
                 Rooms.Add(room["Id"].ToObject<int>(), new Room(room["Id"].ToObject<int>(), null, -1, room["Price"].ToObject<double>(), room["MaxWeight"].ToObject<int>()));
             }
 
+        }
+
+        public static uint ConvertValue(string s)
+        {
+            uint result;
+
+            if (uint.TryParse(s, out result))
+            {
+                return result;
+            }
+            else
+            {
+                int interesante = int.Parse(s);
+                result = (uint)interesante;
+                return result;
+            }
         }
 
     }
