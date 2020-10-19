@@ -7,7 +7,7 @@
 - [VORP-Character](https://github.com/VORPCORE/VORP-Character/releases)
 
 ## How to install
-* [Download the lastest version of VORP Housing](https://github.com/VORPCORE/VORP-Stables/releases)
+* [Download the lastest version of VORP Housing](https://github.com/VORPCORE/VORP-Housing/releases)
 * Copy and paste ```vorp_housing``` folder to ```resources/vorp_housing```
 * Add ```ensure vorp_housing``` to your ```server.cfg``` file
 * To change the language go to ```resources/vorp_housing```
