@@ -35,6 +35,9 @@
       <HintPath>..\..\..\..\FxRedMServer\server-files\citizen\clr2\lib\mono\4.5\CitizenFX.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CitizenFX.Core.Server, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CitizenFX.Core.Server.1.0.5294\lib\net45\CitizenFX.Core.Server.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\VORP-Character\VORP-Character[Client-Server]\build\vorp_character\Newtonsoft.Json.dll</HintPath>
@@ -64,6 +67,7 @@
     <None Include="Es.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

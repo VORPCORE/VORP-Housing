@@ -34,7 +34,7 @@ namespace vorphousing_sv
                     dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
                     int charIdentifier = UserCharacter.charIdentifier;
 
-                    PlayerList PL = new PlayerList();
+                    PlayerList PL = Players;
                     Player _source = PL[source];
                     string sid = "steam:" + _source.Identifiers["steam"];
 
@@ -76,7 +76,7 @@ namespace vorphousing_sv
                 {
                     dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
 
-                    PlayerList PL = new PlayerList();
+                    PlayerList PL = Players;
                     Player _source = PL[source];
                     string sid = "steam:" + _source.Identifiers["steam"];
 
