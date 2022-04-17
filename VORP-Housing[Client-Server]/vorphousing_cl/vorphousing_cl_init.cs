@@ -26,11 +26,13 @@ namespace vorphousing_cl
             EventHandlers["vorp_housing:SetDoorState"] += new Action<int, bool>(SetDoorState);
             EventHandlers["vorp:SelectedCharacter"] += new Action<int>((charId) =>
             {
-                TriggerEvent("vorp:ExecuteServerCallBack", "getHouses", new Action<string>(async (json) => {
+                TriggerServerEvent("vorp_housing:getHouses", new Action<string>(async (json) => 
+                {
                     Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
                     SetBlips();
                 }), "");
-                TriggerEvent("vorp:ExecuteServerCallBack", "getRooms", new Action<string>(async (json) => {
+                TriggerServerEvent("vorp_housing:getRooms", new Action<string>(async (json) => 
+                {
                     Rooms = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
                     //SetBlips();
                     foreach (var r in Rooms)

@@ -3,14 +3,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace vorphousing_sv
 {
     public class vorp_housing_sv_init : BaseScript
     {
-
         public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
@@ -21,107 +19,104 @@ namespace vorphousing_sv
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
             EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
+            EventHandlers["vorp_housing:getRooms"] += new Action<int, CallbackDelegate>(GetRooms);
+            EventHandlers["vorp_housing:getHouses"] += new Action<int, CallbackDelegate>(GetHouses);
 
             TriggerEvent("getCore", new Action<dynamic>((dic) =>
             {
                 VORPCORE = dic;
             }));
+        }
 
-            TriggerEvent("vorp:addNewCallBack", "getRooms", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
+        public async void GetRooms(int source, CallbackDelegate cb)
+        {
+            try
             {
-                try
+                dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
+                int charIdentifier = UserCharacter.charIdentifier;
+
+                PlayerList PL = Players;
+                Player _source = PL[source];
+                string sid = "steam:" + _source.Identifiers["steam"];
+
+                dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+
+                Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
+
+                if (result.Count != 0)
                 {
-                    dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
-                    int charIdentifier = UserCharacter.charIdentifier;
-
-                    PlayerList PL = Players;
-                    Player _source = PL[source];
-                    string sid = "steam:" + _source.Identifiers["steam"];
-
-                    dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
-
-                    Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
-
-                    if (result.Count != 0)
+                    foreach (var r in result)
                     {
-                        foreach (var r in result)
-                        {
-                            int roomId = r.interiorId;
-                            string identifier = r.identifier;
-                            int charidentifier = r.charidentifier;
-                            _Rooms[roomId].Identifier = identifier;
-                            _Rooms[roomId].CharIdentifier = charidentifier;
+                        int roomId = r.interiorId;
+                        string identifier = r.identifier;
+                        int charidentifier = r.charidentifier;
+                        _Rooms[roomId].Identifier = identifier;
+                        _Rooms[roomId].CharIdentifier = charidentifier;
 
-                        }
-                        string rooms = JsonConvert.SerializeObject(_Rooms);
-                        cb(rooms);
                     }
-                    else
-                    {
-                        string rooms = JsonConvert.SerializeObject(_Rooms);
-                        cb(rooms);
-                    }
+                    string rooms = JsonConvert.SerializeObject(_Rooms);
+                    cb(rooms);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine(e.Message);
+                    string rooms = JsonConvert.SerializeObject(_Rooms);
+                    cb(rooms);
                 }
-
-            }));
-
-
-            TriggerEvent("vorp:addNewCallBack", "getHouses", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
+            }
+            catch (Exception e)
             {
-                try
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public async void GetHouses(int source, CallbackDelegate cb)
+        {
+            try
+            {
+                dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
+
+                PlayerList PL = Players;
+                Player _source = PL[source];
+                string sid = "steam:" + _source.Identifiers["steam"];
+
+                Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
+
+                if (result.Count != 0)
                 {
-                    dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
-
-                    PlayerList PL = Players;
-                    Player _source = PL[source];
-                    string sid = "steam:" + _source.Identifiers["steam"];
-
-                    Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
-
-                    if (result.Count != 0)
+                    foreach (var r in result)
                     {
-                        foreach (var r in result)
+                        uint houseId = ConvertValue(r.id.ToString());
+                        string identifier = r.identifier;
+                        int charidentifier = r.charidentifier;
+                        string furniture = "{}";
+                        if (!String.IsNullOrEmpty(r.furniture))
                         {
-                            uint houseId = ConvertValue(r.id.ToString());
-                            string identifier = r.identifier;
-                            int charidentifier = r.charidentifier;
-                            string furniture = "{}";
-                            if (!String.IsNullOrEmpty(r.furniture))
-                            {
-                                furniture = r.furniture;
-                            }
-                            _Houses[houseId].Identifier = identifier;
-                            _Houses[houseId].CharIdentifier = charidentifier;
-                            _Houses[houseId].Furniture = furniture;
-                            _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
-
-                            if (identifier.Equals(sid))
-                            {
-                                _Houses[houseId].IsOwner = true;
-                            }
-
+                            furniture = r.furniture;
                         }
-                        string houses = JsonConvert.SerializeObject(_Houses);
-                        cb(houses);
+                        _Houses[houseId].Identifier = identifier;
+                        _Houses[houseId].CharIdentifier = charidentifier;
+                        _Houses[houseId].Furniture = furniture;
+                        _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
+
+                        if (identifier.Equals(sid))
+                        {
+                            _Houses[houseId].IsOwner = true;
+                        }
+
                     }
-                    else
-                    {
-                        string houses = JsonConvert.SerializeObject(_Houses);
-                        cb(houses);
-                    }
+                    string houses = JsonConvert.SerializeObject(_Houses);
+                    cb(houses);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine(e.Message);
+                    string houses = JsonConvert.SerializeObject(_Houses);
+                    cb(houses);
                 }
-
-            }));
-
-
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public void ChangeDoorState(uint houseId, bool state)
