@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VORP.Housing.Shared.Diagnostics;
 
 namespace vorphousing_cl
 {
@@ -24,23 +25,29 @@ namespace vorphousing_cl
             EventHandlers["vorp_housing:UpdateRoomsStatus"] += new Action<int, string>(UpdateRoom);
             EventHandlers["vorp_housing:SetHouseOwner"] += new Action<int>(SetHouseOwner);
             EventHandlers["vorp_housing:SetDoorState"] += new Action<int, bool>(SetDoorState);
+            EventHandlers["vorp_housing:ListHouses"] += new Action<string>(ListHouses);
+            EventHandlers["vorp_housing:ListRooms"] += new Action<string>(ListRooms);
             EventHandlers["vorp:SelectedCharacter"] += new Action<int>((charId) =>
             {
-                TriggerServerEvent("vorp_housing:getHouses", new Action<string>(async (json) => 
-                {
-                    Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
-                    SetBlips();
-                }), "");
-                TriggerServerEvent("vorp_housing:getRooms", new Action<string>(async (json) => 
-                {
-                    Rooms = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
-                    //SetBlips();
-                    foreach (var r in Rooms)
-                    {
-                        Debug.WriteLine(r.Key.ToString());
-                    }
-                }), "");
+                TriggerServerEvent("vorp_housing:getHouses", charId);
+                TriggerServerEvent("vorp_housing:getRooms", charId);
             });
+        }
+
+        private void ListHouses(string json)
+        {
+            Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
+            SetBlips();
+        }
+
+        private void ListRooms(string json)
+        {
+            Rooms = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
+            //SetBlips();
+            foreach (var r in Rooms)
+            {
+                Logger.Trace(r.Key.ToString());
+            }
         }
 
         private void SetDoorState(int houseId, bool state)
@@ -65,25 +72,31 @@ namespace vorphousing_cl
 
         public static async Task SetBlips()
         {
-            //249721687
-            foreach (var h in GetConfig.Config["Houses"])
+            try
             {
-                int _blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, h["DoorsStatus"][0].ToObject<float>(), h["DoorsStatus"][1].ToObject<float>(), h["DoorsStatus"][2].ToObject<float>());
-                if (Houses.ContainsKey(h["Id"].ToObject<int>()))
+                //249721687
+                foreach (var h in GetConfig.Config["Houses"])
                 {
-                    if ((String.IsNullOrEmpty(Houses[h["Id"].ToObject<int>()].Identifier)))
+                    int _blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, h["DoorsStatus"][0].ToObject<float>(), h["DoorsStatus"][1].ToObject<float>(), h["DoorsStatus"][2].ToObject<float>());
+                    if (Houses.ContainsKey(h["Id"].ToObject<int>()))
                     {
-                        Function.Call((Hash)0x74F74D3207ED525C, _blip, 249721687, 1);
-                    }
-                    else
-                    {
-                        Function.Call((Hash)0x74F74D3207ED525C, _blip, -2024635066, 1);
-                    }
-                    Function.Call((Hash)0x9CB1A1623062F402, _blip, h["Name"].ToString());
+                        if ((String.IsNullOrEmpty(Houses[h["Id"].ToObject<int>()].Identifier)))
+                        {
+                            Function.Call((Hash)0x74F74D3207ED525C, _blip, 249721687, 1);
+                        }
+                        else
+                        {
+                            Function.Call((Hash)0x74F74D3207ED525C, _blip, -2024635066, 1);
+                        }
+                        Function.Call((Hash)0x9CB1A1623062F402, _blip, h["Name"].ToString());
 
-                    Function.Call((Hash)0x174D0AAB11CED739, h["Id"].ToObject<int>(), h["InteriorName"].ToString()); // Load Entity Interior
+                        Function.Call((Hash)0x174D0AAB11CED739, h["Id"].ToObject<int>(), h["InteriorName"].ToString()); // Load Entity Interior
+                    }
                 }
-
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Server.Init.SetBlips(): {ex.Message}");
             }
         }
 
