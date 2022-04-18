@@ -1,5 +1,5 @@
 ﻿{
-  "defaultlang": "En",
+  "defaultlang": "Es",
 
   "ItemsBlacklist": [
     "anything"
@@ -8,20 +8,20 @@
   "Rooms": [
     {
       "Id": -1, // Poner una Id que no esté en uso | Put a non used Id
-      "Name": "Room 2A", // Valentine
+      "Name": "Habitación 2A", // Valentine
       "Price": 50.0,
       "DoorsStatus": [ -322.7286, 767.2573, 121.7059 ],
       "Doors": [
         [ -322.74942016602, 766.65637207031, 120.62321472168, 100.00 ]
       ],
       "Inventory": [ -327.1241, 764.3896, 122.6827, 2.0 ],
-      "TPEnter": [ -323.707, 767.1247, 121.6827 ], // Donde entras a la Room desde fuera | Where you enter the room from outside it 
-      "TPLeave": [ -321.8341, 767.2936, 121.6827 ], // Donde sales de la Room desde dentro | Where you leave the room from inside it
+      "TPEnter": [ -323.707, 767.1247, 121.6827 ], // Donde entras a la habitación desde fuera | Where you enter the room from outside it 
+      "TPLeave": [ -321.8341, 767.2936, 121.6827 ], // Donde sales de la habitación desde dentro | Where you leave the room from inside it
       "MaxWeight": 20
     },
     {
       "Id": -2, // Poner una Id que no esté en uso | Put a non used Id
-      "Name": "Room 2B", // Valentine
+      "Name": "Habitación 2B", // Valentine
       "Price": 50.0,
       "DoorsStatus": [ -321.5221, 762.2973, 121.6815 ],
       "Doors": [
@@ -34,7 +34,7 @@
     },
     {
       "Id": -3, // Poner una Id que no esté en uso | Put a non used Id
-      "Name": "Room 1", // Blackwater
+      "Name": "Habitación 1", // Blackwater
       "Price": 50.0,
       "DoorsStatus": [ -818.63, -1323.6, 46.9 ],
       "Doors": [
@@ -47,7 +47,7 @@
     },
     {
       "Id": -4, // Poner una Id que no esté en uso | Put a non used Id
-      "Name": "Room 1", // Strawberry
+      "Name": "Habitación 1", // Strawberry
       "Price": 50.0,
       "DoorsStatus": [ -1820.96, -369.8, 165.5 ],
       "Doors": [
@@ -60,7 +60,7 @@
     },
     {
       "Id": -5, // Poner una Id que no esté en uso | Put a non used Id
-      "Name": "Room 1", // Saint Denis
+      "Name": "Habitación 1", // Saint Denis
       "Price": 50.0,
       "DoorsStatus": [ 2634.68, -1225.02, 58.6 ],
       "Doors": [
@@ -77,7 +77,7 @@
     {
       "Id": 34306,
       "InteriorName": "br_tre_house_cheat01",
-      "Name": "Cabin at Braithwaite Manor",
+      "Name": "Cabaña en el Señorío Braithwaite",
       "Price": 446.0,
       "DoorsStatus": [ 1115.467, -1989.276, 55.7 ],
       "Doors": [
@@ -89,7 +89,7 @@
     {
       "Id": 10754,
       "InteriorName": "rdl_house_wilchest",
-      "Name": "Cabin in Rio del Lobo Rock",
+      "Name": "Cabaña en Río del Lobo Rock",
       "Price": 467.0,
       "DoorsStatus": [ -3481.58, -3468.89, 0.26 ],
       "Doors": [
@@ -101,7 +101,7 @@
     {
       "Id": 14338,
       "InteriorName": "clean_abe",
-      "Name": "House near the Kamassa River",
+      "Name": "Casa cerca del río Kamassa",
       "Price": 2223.0,
       "DoorsStatus": [ 1791.67, -83.81, 56.86 ],
       "Doors": [
@@ -113,7 +113,7 @@
     {
       "Id": 2,
       "InteriorName": "che_maincabin_occupied",
-      "Name": "Window Rock Farm",
+      "Name": "Granja Window Rock",
       "Price": 1088.0,
       "DoorsStatus": [ -398.143, 1722.365, 216.4293 ],
       "Doors": [
@@ -126,7 +126,7 @@
     {
       "Id": 22018,
       "InteriorName": "cat_house_propset",
-      "Name": "House on the Lannahechee River",
+      "Name": "Casa en el río Lannahechee",
       "Price": 1389.0,
       "DoorsStatus": [ 1322.48, -2280.04, 50.59 ],
       "Doors": [
@@ -139,7 +139,7 @@
     {
       "Id": 2306,
       "InteriorName": "vet_fishtrophy",
-      "Name": "Cabin at Lake O'Creagh's",
+      "Name": "Cabaña en el Lago O'Creagh's",
       "Price": 489.0,
       "DoorsStatus": [ 1702.27, 1513.79, 147.92 ],
       "Doors": [
@@ -152,7 +152,7 @@
     {
       "Id": 23554,
       "InteriorName": "lt_murder_before",
-      "Name": "Cabin on the Southfield Plains",
+      "Name": "Cabaña en las Llanuras Southfield",
       "Price": 1055.0,
       "DoorsStatus": [ 1136.39, -977.3, 69.45 ],
       "Doors": [
@@ -164,7 +164,7 @@
     {
       "Id": 24834,
       "InteriorName": "shb_p_mansion_01",
-      "Name": "Mansion in the swamp",
+      "Name": "Mansión en el pantano",
       "Price": 2456.0,
       "DoorsStatus": [ 1891.66, -1858.4, 43.2 ],
       "Doors": [
@@ -178,7 +178,7 @@
     {
       "Id": 26114,
       "InteriorName": "shack_it_02_cheat01",
-      "Name": "Cabin in the Roanoke Valley",
+      "Name": "Cabaña en el Valle Roanoke",
       "Price": 435.0,
       "DoorsStatus": [ 2627.75, 1693.87, 115.76 ],
       "Doors": [
@@ -190,7 +190,7 @@
     {
       "Id": 27650,
       "InteriorName": "rad_house_int_medicine",
-      "Name": "Cabin in Rhodes",
+      "Name": "Casa en Rhodes",
       "Price": 1667.0,
       "DoorsStatus": [ 1113.98, -1304.82, 66.46 ],
       "Doors": [
@@ -203,7 +203,7 @@
     {
       "Id": 27906,
       "InteriorName": "col_cabin_lights_on",
-      "Name": "Cabin in the snow town",
+      "Name": "Cabaña en el pueblo de la nieve",
       "Price": 850.0,
       "DoorsStatus": [ -1348.19, 2435.88, 308.46 ],
       "Doors": [
@@ -216,7 +216,7 @@
     {
       "Id": 28162,
       "InteriorName": "adl_winter01_trapdoorclosed",
-      "Name": "Cabin in the snow",
+      "Name": "Cabaña en la nieve",
       "Price": 688.0,
       "DoorsStatus": [ -556.81, 2699.32, 320.47 ],
       "Doors": [
@@ -229,7 +229,7 @@
     {
       "Id": 28418,
       "InteriorName": "_car_house_int_before_ransack",
-      "Name": "Cabin in Valentine",
+      "Name": "Casa en las afueras de Valentine",
       "Price": 1325.0,
       "DoorsStatus": [ 778.75, 848.85, 118.97 ],
       "Doors": [
@@ -242,7 +242,7 @@
     {
       "Id": 30722,
       "InteriorName": "shack_sc_int_pulp_novel",
-      "Name": "Cabin on the Dakota River",
+      "Name": "Cabaña en el río Dakota",
       "Price": 432.0,
       "DoorsStatus": [ -691.82, 1042.65, 135.07 ],
       "Doors": [
@@ -254,7 +254,7 @@
     {
       "Id": 32514,
       "InteriorName": "loansharking_chair_col",
-      "Name": "House on the Dakota River",
+      "Name": "Casa en el río Dakota",
       "Price": 1155.0,
       "DoorsStatus": [ -609.25, -26.24, 86.02 ],
       "Doors": [
@@ -267,7 +267,7 @@
     {
       "Id": 39938,
       "InteriorName": "pro_worker_bedmade",
-      "Name": "Big Valley Farm House",
+      "Name": "Casa en la granja de Big Valley",
       "Price": 995.0,
       "DoorsStatus": [ -2591.13, 457.31, 147.06 ],
       "Doors": [
@@ -280,7 +280,7 @@
     {
       "Id": 40962,
       "InteriorName": "tan_evelyn_3_4",
-      "Name": "Cabin in the Aurora Basin",
+      "Name": "Cabaña en la cuenca Aurora",
       "Price": 477.0,
       "DoorsStatus": [ -2374.25, -1591.91, 154.32 ],
       "Doors": [
@@ -292,7 +292,7 @@
     {
       "Id": 4610,
       "InteriorName": "han_int_tables_flipped",
-      "Name": "House on the Little Creek River",
+      "Name": "Casa en el río Little Creek",
       "Price": 1275.0,
       "DoorsStatus": [ -2181.95, 716.08, 122.67 ],
       "Doors": [
@@ -302,9 +302,9 @@
       "MaxWeight": 70
     },
     {
-      "Id": 50690, // No carga bien el interior | It does not load interior well
+      "Id": 50690, // No carga bien el interior
       "InteriorName": "beechers_fully_decorated_finale",
-      "Name": "House on the outskirts of Blackwater",
+      "Name": "Casa en las afueras de Blackwater",
       "Price": 2456.0,
       "DoorsStatus": [ -1645.6, -1367.16, 84.47 ],
       "Doors": [
@@ -318,7 +318,7 @@
     {
       "Id": 53250,
       "InteriorName": "wat_int_chimneyfire",
-      "Name": "Cabin on the Little Creek River",
+      "Name": "Cabaña en el río Little Creek",
       "Price": 428.0,
       "DoorsStatus": [ -1815.78, 654.99, 131.92 ],
       "Doors": [
@@ -330,7 +330,7 @@
     {
       "Id": 54786,
       "InteriorName": "six_table_static",
-      "Name": "Cabin in the Cumberland Forest",
+      "Name": "Cabaña en el bosque Cumberland",
       "Price": 1228.0,
       "DoorsStatus": [ -66.55, 1235.65, 170.83 ],
       "Doors": [
@@ -342,7 +342,7 @@
     {
       "Id": 56322,
       "InteriorName": "lak_dockhouse_undamaged",
-      "Name": "Cabin in Lakay",
+      "Name": "Cabaña en Lakay",
       "Price": 515.0,
       "DoorsStatus": [ 2234.78, -773.82, 43.59 ],
       "Doors": [
@@ -356,7 +356,7 @@
     {
       "Id": 62722,
       "InteriorName": "hf_pulp_novel",
-      "Name": "Little house near Emerald station",
+      "Name": "Casita cerca de la estación Emerald",
       "Price": 545.0,
       "DoorsStatus": [ 1887.61, 298.13, 77.1 ],
       "Doors": [
@@ -368,7 +368,7 @@
     {
       "Id": 62978,
       "InteriorName": "ven_int_lights_on",
-      "Name": "House on the Don Julio river",
+      "Name": "Casa en el río Don Julio",
       "Price": 467.0,
       "DoorsStatus": [ -3551.88, -3011.66, 11.87 ],
       "Doors": [
@@ -381,7 +381,7 @@
     {
       "Id": 64514,
       "InteriorName": "ple_house_int_cheatcode_01",
-      "Name": "House in Cholla Springs",
+      "Name": "Casita en Cholla Springs",
       "Price": 421.0,
       "DoorsStatus": [ -4366.43, -2415.81, 20.44 ],
       "Doors": [
@@ -393,7 +393,7 @@
     {
       "Id": 67330,
       "InteriorName": "sil_house_wilchest72",
-      "Name": "North house in Tumbleweed",
+      "Name": "Casa al norte de Tumbleweed",
       "Price": 467.0,
       "DoorsStatus": [ -5551.83, -2400.77, -8.68 ],
       "Doors": [
@@ -406,7 +406,7 @@
     {
       "Id": 70146,
       "InteriorName": "shb_int_mp",
-      "Name": "Cabin in Big Valley",
+      "Name": "Cabaña en Big Valley",
       "Price": 450.0,
       "DoorsStatus": [ -2371.31, 474.91, 132.3 ],
       "Doors": [
@@ -419,7 +419,7 @@
     {
       "Id": 72450,
       "InteriorName": "rocky_int_clean",
-      "Name": "Brandywine Waterfall Cabin",
+      "Name": "Cabaña en la cascada Brandywine",
       "Price": 545.0,
       "DoorsStatus": [ 2989.21, 2193.15, 166.83 ],
       "Doors": [
@@ -432,7 +432,7 @@
     {
       "Id": 770,
       "InteriorName": "inn_lonnie_firelit",
-      "Name": "Cabin in the Eris Fields Forest",
+      "Name": "Cabaña en el bosque de los campos Eris",
       "Price": 488.0,
       "DoorsStatus": [ 1626.71, -365.96, 75.95 ],
       "Doors": [
@@ -444,7 +444,7 @@
     {
       "Id": 9986,
       "InteriorName": "intgroup_downes_before_move",
-      "Name": "House at Cumberland Waterfall",
+      "Name": "Casa en la cascada Cumberland",
       "Price": 500.0,
       "DoorsStatus": [ -818.0, 351.4, 98.13 ],
       "Doors": [
@@ -457,12 +457,12 @@
     {
       "Id": 72706,
       "InteriorName": "bra_mansion_alt",
-      "Name": "Mansion Braithwaite",
+      "Name": "Mansión Braithwaite",
       "Price": 5523.50,
       "DoorsStatus": [ 1011.01, -1762.31, 47.63 ],
       "Doors": [
-        [ 1012.2030029297, -1762.0412597656, 46.599708557129, 0.0 ], // Puerta Principal 1 Derecha desde dentro | Main Door 1 Right from inside
-        [ 1010.0026855469, -1762.0411376953, 46.599704742432, 0.0 ], // Puerta Principal 2 Izquierda desde dentro | Main Door 2 Left from inside
+        [ 1012.2030029297, -1762.0412597656, 46.599708557129, 0.0 ], // Puerta Principal 1 Derecha desde dentro
+        [ 1010.0026855469, -1762.0411376953, 46.599704742432, 0.0 ], // Puerta Principal 2 Izquierda desde dentro
         [ 1022.5345458984, -1765.7020263672, 46.624011993408, 89.790184020996 ],
         [ 1022.5345458984, -1764.3389892578, 46.624011993408, 90.153038024902 ],
         [ 1022.5319213867, -1769.2026367188, 46.623615264893, 89.790184020996 ],

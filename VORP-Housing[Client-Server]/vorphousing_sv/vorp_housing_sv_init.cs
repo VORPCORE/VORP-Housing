@@ -3,14 +3,13 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using VORP.Housing.Shared.Diagnostics;
 
 namespace vorphousing_sv
 {
     public class vorp_housing_sv_init : BaseScript
     {
-
         public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
@@ -21,107 +20,134 @@ namespace vorphousing_sv
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
             EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
+            EventHandlers["vorp_housing:getRooms"] += new Action<int>(GetRooms);
+            EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHouses);
+        }
 
-            TriggerEvent("getCore", new Action<dynamic>((dic) =>
+        public async void GetRooms(int source)//, CallbackDelegate cb)
+        {
+            try
             {
-                VORPCORE = dic;
-            }));
-
-            TriggerEvent("vorp:addNewCallBack", "getRooms", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
-            {
-                try
+                // TODO: Convert this into a method similar to Inventory's PluginManager class
+                if (VORPCORE == null)
                 {
-                    dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
-                    int charIdentifier = UserCharacter.charIdentifier;
+                    Logger.Error("Server.Init.GetRooms(): VORPCORE is null");
+                    return;
+                }
 
-                    PlayerList PL = new PlayerList();
-                    Player _source = PL[source];
-                    string sid = "steam:" + _source.Identifiers["steam"];
+                // TODO: Convert this into a method similar to Inventory's PluginManager class
+                if (VORPCORE.getUser(source) == null)
+                {
+                    Logger.Error("Server.Init.GetRooms(): VORPCORE.getUser(source) is null");
+                    return;
+                }
 
-                    dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+                dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
+                int charIdentifier = UserCharacter.charIdentifier;
 
-                    Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
+                PlayerList PL = Players;
+                Player _source = PL[source];
+                string sid = "steam:" + _source.Identifiers["steam"];
 
-                    if (result.Count != 0)
+                dynamic tableExist = await Exports["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'rooms' LIMIT 1;", new string[] { });
+                if (tableExist.Count == 0)
+                {
+                    Logger.Error("Server.Init.GetRooms(): SQL table \"rooms\" doesn't exist");
+                    return;
+                }
+
+                dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+                Logger.Debug(JsonConvert.SerializeObject(result));
+
+                Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
+
+                if (result != null && result.Count > 0)
+                {
+                    foreach (var r in result)
                     {
-                        foreach (var r in result)
+                        int roomId = r.interiorId;
+                        string identifier = r.identifier;
+                        int charidentifier = r.charidentifier;
+                        _Rooms[roomId].Identifier = identifier;
+                        _Rooms[roomId].CharIdentifier = charidentifier;
+
+                    }
+                    string rooms = JsonConvert.SerializeObject(_Rooms);
+                    TriggerClientEvent("vorp_housing:ListRooms", rooms);
+                    //cb(rooms);
+                }
+                else
+                {
+                    string rooms = JsonConvert.SerializeObject(_Rooms);
+                    TriggerClientEvent("vorp_housing:ListRooms", rooms);
+                    //cb(rooms);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Server.Init.GetRooms(): {ex.Message}");
+            }
+        }
+
+        public async void GetHouses(int source)//, CallbackDelegate cb)
+        {
+            try
+            {
+                PlayerList PL = Players;
+                Player _source = PL[source];
+                string sid = "steam:" + _source.Identifiers["steam"];
+
+                Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
+
+                dynamic tableExist = await Exports["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'housing' LIMIT 1;", new string[] { });
+                if (tableExist.Count == 0)
+                {
+                    Logger.Error("Server.Init.GetHouses(): SQL table \"housing\" doesn't exist");
+                    return;
+                }
+
+                dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
+
+                if (result != null && result.Count > 0)
+                {
+                    Logger.Debug(JsonConvert.SerializeObject(result));
+
+                    foreach (var r in result)
+                    {
+                        uint houseId = ConvertValue(r.id.ToString());
+                        string identifier = r.identifier;
+                        int charidentifier = r.charidentifier;
+                        string furniture = "{}";
+                        if (!String.IsNullOrEmpty(r.furniture))
                         {
-                            int roomId = r.interiorId;
-                            string identifier = r.identifier;
-                            int charidentifier = r.charidentifier;
-                            _Rooms[roomId].Identifier = identifier;
-                            _Rooms[roomId].CharIdentifier = charidentifier;
-
+                            furniture = r.furniture;
                         }
-                        string rooms = JsonConvert.SerializeObject(_Rooms);
-                        cb(rooms);
-                    }
-                    else
-                    {
-                        string rooms = JsonConvert.SerializeObject(_Rooms);
-                        cb(rooms);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                        _Houses[houseId].Identifier = identifier;
+                        _Houses[houseId].CharIdentifier = charidentifier;
+                        _Houses[houseId].Furniture = furniture;
+                        _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
 
-            }));
-
-
-            TriggerEvent("vorp:addNewCallBack", "getHouses", new Action<int, CallbackDelegate, dynamic>(async (source, cb, anything) =>
-            {
-                try
-                {
-                    dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
-
-                    PlayerList PL = new PlayerList();
-                    Player _source = PL[source];
-                    string sid = "steam:" + _source.Identifiers["steam"];
-
-                    Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
-
-                    if (result.Count != 0)
-                    {
-                        foreach (var r in result)
+                        if (identifier.Equals(sid))
                         {
-                            uint houseId = ConvertValue(r.id.ToString());
-                            string identifier = r.identifier;
-                            int charidentifier = r.charidentifier;
-                            string furniture = "{}";
-                            if (!String.IsNullOrEmpty(r.furniture))
-                            {
-                                furniture = r.furniture;
-                            }
-                            _Houses[houseId].Identifier = identifier;
-                            _Houses[houseId].CharIdentifier = charidentifier;
-                            _Houses[houseId].Furniture = furniture;
-                            _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
-
-                            if (identifier.Equals(sid))
-                            {
-                                _Houses[houseId].IsOwner = true;
-                            }
-
+                            _Houses[houseId].IsOwner = true;
                         }
-                        string houses = JsonConvert.SerializeObject(_Houses);
-                        cb(houses);
+
                     }
-                    else
-                    {
-                        string houses = JsonConvert.SerializeObject(_Houses);
-                        cb(houses);
-                    }
+                    string houses = JsonConvert.SerializeObject(_Houses);
+                    TriggerClientEvent("vorp_housing:ListHouses", houses);
+                    //cb(houses);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine(e.Message);
+                    string houses = JsonConvert.SerializeObject(_Houses);
+                    TriggerClientEvent("vorp_housing:ListHouses", houses);
+                    //cb(houses);
                 }
-
-            }));
-
-
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Server.Init.GetHouses(): {ex.Message}");
+            }
         }
 
         public void ChangeDoorState(uint houseId, bool state)
