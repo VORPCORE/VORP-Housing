@@ -93,6 +93,12 @@ namespace vorphousing_sv
         {
             try
             {
+                PlayerList PL = Players;
+                Player _source = PL[source];
+                string sid = "steam:" + _source.Identifiers["steam"];
+
+                Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
+
                 dynamic tableExist = await Exports["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'housing' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
                 {
@@ -101,16 +107,11 @@ namespace vorphousing_sv
                 }
 
                 dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
-                Logger.Debug(JsonConvert.SerializeObject(result));
-
-                PlayerList PL = Players;
-                Player _source = PL[source];
-                string sid = "steam:" + _source.Identifiers["steam"];
-
-                Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
 
                 if (result != null && result.Count > 0)
                 {
+                    Logger.Debug(JsonConvert.SerializeObject(result));
+
                     foreach (var r in result)
                     {
                         uint houseId = ConvertValue(r.id.ToString());
