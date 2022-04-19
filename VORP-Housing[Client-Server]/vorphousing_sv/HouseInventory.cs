@@ -23,7 +23,7 @@ namespace vorphousing_sv
         {
             string sid = "steam:" + player.Identifiers["steam"];
             int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = vorp_housing_sv_init.VORPCORE.getUser(_source).getUsedCharacter;
+            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
             int charIdentifier = UserCharacter.charIdentifier;
 
             JObject data = JObject.Parse(jsondata);
@@ -57,7 +57,7 @@ namespace vorphousing_sv
             {
                 int weapId = data["item"]["id"].ToObject<int>();
 
-                if (vorp_housing_sv_init.Rooms.ContainsKey(houseId))
+                if (Init.Rooms.ContainsKey(houseId))
                 {
                     Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {
@@ -204,7 +204,7 @@ namespace vorphousing_sv
                         return;
                     }
 
-                    if (vorp_housing_sv_init.Rooms.ContainsKey(houseId))
+                    if (Init.Rooms.ContainsKey(houseId))
                     {
 
                         Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
@@ -361,7 +361,7 @@ namespace vorphousing_sv
 
             string sid = "steam:" + player.Identifiers["steam"];
             int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = vorp_housing_sv_init.VORPCORE.getUser(_source).getUsedCharacter;
+            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
             int charIdentifier = UserCharacter.charIdentifier;
 
             JObject data = JObject.Parse(jsondata);
@@ -402,7 +402,7 @@ namespace vorphousing_sv
                 return;
             }
 
-            if (vorp_housing_sv_init.Rooms.ContainsKey(houseId))
+            if (Init.Rooms.ContainsKey(houseId))
             {
                 Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
@@ -424,7 +424,7 @@ namespace vorphousing_sv
                                 totalWeight += hd["count"].ToObject<int>();
                             }
 
-                            int maxWeight = vorp_housing_sv_init.Rooms[houseId].MaxWeight;
+                            int maxWeight = Init.Rooms[houseId].MaxWeight;
 
                             if (type.Contains("item_weapon"))
                             {
@@ -557,7 +557,7 @@ namespace vorphousing_sv
                                 totalWeight += hd["count"].ToObject<int>();
                             }
 
-                            int maxWeight = vorp_housing_sv_init.Houses[(uint)houseId].MaxWeight;
+                            int maxWeight = Init.Houses[(uint)houseId].MaxWeight;
 
                             if (type.Contains("item_weapon"))
                             {
@@ -675,10 +675,10 @@ namespace vorphousing_sv
             string sid = "steam:" + player.Identifiers["steam"];
 
             int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = vorp_housing_sv_init.VORPCORE.getUser(_source).getUsedCharacter;
+            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
             int charIdentifier = UserCharacter.charIdentifier;
 
-            if (vorp_housing_sv_init.Rooms.ContainsKey(houseId))
+            if (Init.Rooms.ContainsKey(houseId))
             {
 
                 Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>

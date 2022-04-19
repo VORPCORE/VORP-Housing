@@ -5,13 +5,12 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using VORP.Housing.Shared.Diagnostics;
 
 namespace vorphousing_cl
 {
-    public class vorphousing_cl_init : BaseScript
+    public class Init : BaseScript
     {
         public static Dictionary<int, House> Houses = new Dictionary<int, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
@@ -19,7 +18,7 @@ namespace vorphousing_cl
         public static bool isInInterior = false;
         public static bool isInRoom = false;
 
-        public vorphousing_cl_init()
+        public Init()
         {
             EventHandlers["vorp_housing:UpdateHousesStatus"] += new Action<int, string>(UpdateHouse);
             EventHandlers["vorp_housing:UpdateRoomsStatus"] += new Action<int, string>(UpdateRoom);

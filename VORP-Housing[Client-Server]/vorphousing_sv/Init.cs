@@ -8,14 +8,14 @@ using VORP.Housing.Shared.Diagnostics;
 
 namespace vorphousing_sv
 {
-    public class vorp_housing_sv_init : BaseScript
+    public class Init : BaseScript
     {
         public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
         public static dynamic VORPCORE;
         
-        public vorp_housing_sv_init()
+        public Init()
         {
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
             EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);

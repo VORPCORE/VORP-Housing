@@ -55,7 +55,7 @@
     <Compile Include="House.cs" />
     <Compile Include="HouseInventory.cs" />
     <Compile Include="LoadConfig.cs" />
-    <Compile Include="vorp_housing_sv_init.cs" />
+    <Compile Include="Init.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
