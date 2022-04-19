@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CitizenFX.Core;
 
-namespace vorphousing_sv
+namespace VORP.Housing.Server
 {
     public class House : BaseScript
     {

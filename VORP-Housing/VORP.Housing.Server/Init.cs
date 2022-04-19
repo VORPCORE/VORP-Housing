@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VORP.Housing.Shared.Diagnostics;
 
-namespace vorphousing_sv
+namespace VORP.Housing.Server
 {
     public class Init : BaseScript
     {

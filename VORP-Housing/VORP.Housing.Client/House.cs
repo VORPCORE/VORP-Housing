@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace vorphousing_cl
+namespace VORP.Housing.Client
 {
     public class House
     {

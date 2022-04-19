@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VORP.Housing.Shared.Diagnostics;
 
-namespace vorphousing_cl
+namespace VORP.Housing.Client
 {
     public class Init : BaseScript
     {

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace vorphousing_cl
+namespace VORP.Housing.Client
 {
     public class GetConfig : BaseScript
     {
