@@ -72,16 +72,10 @@ namespace vorphousing_sv
                         _Rooms[roomId].CharIdentifier = charidentifier;
 
                     }
-                    string rooms = JsonConvert.SerializeObject(_Rooms);
-                    TriggerClientEvent("vorp_housing:ListRooms", rooms);
-                    //cb(rooms);
                 }
-                else
-                {
-                    string rooms = JsonConvert.SerializeObject(_Rooms);
-                    TriggerClientEvent("vorp_housing:ListRooms", rooms);
-                    //cb(rooms);
-                }
+
+                string rooms = JsonConvert.SerializeObject(_Rooms);
+                TriggerClientEvent("vorp_housing:ListRooms", rooms);
             }
             catch (Exception ex)
             {
