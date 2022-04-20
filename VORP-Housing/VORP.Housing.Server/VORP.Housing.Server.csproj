@@ -51,8 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Room.cs" />
-    <Compile Include="House.cs" />
     <Compile Include="HouseInventory.cs" />
     <Compile Include="LoadConfig.cs" />
     <Compile Include="Init.cs" />

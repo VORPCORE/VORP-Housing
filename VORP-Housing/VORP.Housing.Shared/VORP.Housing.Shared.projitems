@@ -10,5 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\Logger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\House.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Room.cs" />
   </ItemGroup>
 </Project>

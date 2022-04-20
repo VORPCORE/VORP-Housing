@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CitizenFX.Core;
+﻿using CitizenFX.Core;
 
-namespace VORP.Housing.Server
+namespace VORP.Housing.Shared.Models
 {
     public class House : BaseScript
     {

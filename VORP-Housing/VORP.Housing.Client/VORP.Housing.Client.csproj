@@ -53,8 +53,6 @@
   <ItemGroup>
     <Compile Include="Functions.cs" />
     <Compile Include="GetConfig.cs" />
-    <Compile Include="House.cs" />
-    <Compile Include="Room.cs" />
     <Compile Include="Init.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

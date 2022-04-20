@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using VORP.Housing.Shared.Diagnostics;
+using VORP.Housing.Shared.Models;
 
 namespace VORP.Housing.Client
 {
