@@ -27,6 +27,7 @@ namespace VORP.Housing.Server
             LoadConfigAndLang();
         }
 
+        #region Private Methods
         private void LoadConfigAndLang()
         {
             if (File.Exists($"{resourcePath}/Config.json"))
@@ -57,5 +58,6 @@ namespace VORP.Housing.Server
         {
             source.TriggerEvent($"{API.GetCurrentResourceName()}:SendConfig", ConfigString, Langs);
         }
+        #endregion
     }
 }

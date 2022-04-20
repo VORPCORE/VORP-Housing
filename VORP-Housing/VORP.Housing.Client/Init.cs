@@ -34,6 +34,7 @@ namespace VORP.Housing.Client
             });
         }
 
+        #region Private Methods
         private void ListHouses(string json)
         {
             Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
@@ -70,7 +71,7 @@ namespace VORP.Housing.Client
             Houses[houseId].IsOwner = true;
         }
 
-        public static void SetBlips()
+        private static void SetBlips()
         {
             try
             {
@@ -101,7 +102,7 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        public async Task UseInteriorCompsAsync()
+        private async Task UseInteriorCompsAsync()
         {
             if (!GetConfig.isLoaded) return;
 
@@ -373,11 +374,10 @@ namespace VORP.Housing.Client
                             API.SetEntityHeading(entity, doorH);
                             API.FreezeEntityPosition(entity, true);
                             API.DoorSystemSetDoorState(entity, 1);
-                        }
                     }
                 }
             }
-
         }
-    
+        #endregion
+    }
 }

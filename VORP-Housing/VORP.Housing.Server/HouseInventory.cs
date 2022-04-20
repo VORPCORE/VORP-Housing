@@ -10,7 +10,6 @@ namespace VORP.Housing.Server
 {
     public class HouseInventory : BaseScript
     {
-
         public HouseInventory()
         {
             EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouseAsync);
@@ -19,6 +18,7 @@ namespace VORP.Housing.Server
             EventHandlers["vorp_housing:UpdateInventoryHouse"] += new Action<Player, int>(UpdateInventoryHouse);
         }
 
+        #region Private Methods
         private async void TakeFromHouseAsync([FromSource] Player player, string jsondata)
         {
             string sid = "steam:" + player.Identifiers["steam"];
@@ -735,11 +735,9 @@ namespace VORP.Housing.Server
                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                         }
                     }
-
                 }));
             }
-
         }
-
+        #endregion
     }
 }

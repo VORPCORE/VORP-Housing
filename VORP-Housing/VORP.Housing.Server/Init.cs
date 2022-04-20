@@ -25,7 +25,23 @@ namespace VORP.Housing.Server
             EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHousesAsync);
         }
 
-        public async void GetRoomsAsync(int source)//, CallbackDelegate cb)
+        #region Public Method
+        public static async Task LoadAllAsync()
+        {
+            foreach (var house in LoadConfig.Config["Houses"])
+            {
+                Houses.Add(house["Id"].ToObject<uint>(), new House(house["Id"].ToObject<uint>(), house["InteriorName"].ToString(), null, -1, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
+            }
+
+            foreach (var room in LoadConfig.Config["Rooms"])
+            {
+                Rooms.Add(room["Id"].ToObject<int>(), new Room(room["Id"].ToObject<int>(), null, -1, room["Price"].ToObject<double>(), room["MaxWeight"].ToObject<int>()));
+            }
+        }
+        #endregion
+
+        #region Private Methods
+        private async void GetRoomsAsync(int source)
         {
             try
             {
@@ -84,7 +100,7 @@ namespace VORP.Housing.Server
             }
         }
 
-        public async void GetHousesAsync(int source)//, CallbackDelegate cb)
+        private async void GetHousesAsync(int source)//, CallbackDelegate cb)
         {
             try
             {
@@ -145,13 +161,13 @@ namespace VORP.Housing.Server
             }
         }
 
-        public void ChangeDoorState(uint houseId, bool state)
+        private void ChangeDoorState(uint houseId, bool state)
         {
             Houses[houseId].SetOpen(state);
             TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
         }
 
-        public void BuyHouse([FromSource]Player source, uint houseId, double price)
+        private void BuyHouse([FromSource]Player source, uint houseId, double price)
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
@@ -172,7 +188,7 @@ namespace VORP.Housing.Server
             }
         }
 
-        public async void BuyRoomAsync([FromSource] Player source, int roomId, double price)
+        private async void BuyRoomAsync([FromSource] Player source, int roomId, double price)
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
@@ -193,25 +209,9 @@ namespace VORP.Housing.Server
             }
         }
 
-        public static async Task LoadAllAsync()
+        private static uint ConvertValue(string s)
         {
-            foreach (var house in LoadConfig.Config["Houses"])
-            {
-                Houses.Add(house["Id"].ToObject<uint>(), new House(house["Id"].ToObject<uint>(), house["InteriorName"].ToString(), null, -1, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
-            }
-
-            foreach (var room in LoadConfig.Config["Rooms"])
-            {
-                Rooms.Add(room["Id"].ToObject<int>(), new Room(room["Id"].ToObject<int>(), null, -1, room["Price"].ToObject<double>(), room["MaxWeight"].ToObject<int>()));
-            }
-
-        }
-
-        public static uint ConvertValue(string s)
-        {
-            uint result;
-
-            if (uint.TryParse(s, out result))
+            if (uint.TryParse(s, out uint result))
             {
                 return result;
             }
@@ -222,6 +222,6 @@ namespace VORP.Housing.Server
                 return result;
             }
         }
-
+        #endregion
     }
 }

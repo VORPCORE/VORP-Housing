@@ -37,6 +37,7 @@ namespace VORP.Housing.Shared.Models
         public bool IsOwner { get => isOwner; set => isOwner = value; }
         public int MaxWeight { get => maxWeight; set => maxWeight = value; }
 
+        #region Public Methods
         public void BuyHouse(string identifier, int charid)
         {
             this.identifier = identifier;
@@ -50,5 +51,6 @@ namespace VORP.Housing.Shared.Models
             int intopen = open ? 1 : 0;
             Exports["ghmattimysql"].execute($"UPDATE housing SET open=? WHERE id=?", new object[] { intopen, id });
         }
+        #endregion
     }
 }

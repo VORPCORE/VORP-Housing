@@ -5,15 +5,9 @@ namespace VORP.Housing.Shared.Diagnostics
 {
     public static class Logger
     {
-        static string _loggingLevel = API.GetResourceMetadata(API.GetCurrentResourceName(), "log_level", 0);
+        private static readonly string _loggingLevel = API.GetResourceMetadata(API.GetCurrentResourceName(), "log_level", 0);
 
-        static bool ShowOutput(string level)
-        {
-            string lowercase = _loggingLevel.ToLower();
-            if (lowercase == "all") return true;
-            return (lowercase == level);
-        }
-
+        #region Public Methods
         public static void Info(string msg)
         {
             if (ShowOutput("info"))
@@ -68,10 +62,20 @@ namespace VORP.Housing.Shared.Diagnostics
             if (ShowOutput("error"))
                 Format($"[ERROR] {msg}\r\n{ex}");
         }
+        #endregion
 
-        static void Format(string msg)
+        #region Private Methods
+        private static void Format(string msg)
         {
             CitizenFX.Core.Debug.WriteLine($"{msg}");
         }
+
+        private static bool ShowOutput(string level)
+        {
+            string lowercase = _loggingLevel.ToLower();
+            if (lowercase == "all") return true;
+            return (lowercase == level);
+        }
+        #endregion
     }
 }
