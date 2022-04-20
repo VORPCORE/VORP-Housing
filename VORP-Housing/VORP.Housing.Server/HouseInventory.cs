@@ -13,13 +13,13 @@ namespace VORP.Housing.Server
 
         public HouseInventory()
         {
-            EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouse);
-            EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouse);
+            EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouseAsync);
+            EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouseAsync);
 
             EventHandlers["vorp_housing:UpdateInventoryHouse"] += new Action<Player, int>(UpdateInventoryHouse);
         }
 
-        private async void TakeFromHouse([FromSource] Player player, string jsondata)
+        private async void TakeFromHouseAsync([FromSource] Player player, string jsondata)
         {
             string sid = "steam:" + player.Identifiers["steam"];
             int _source = int.Parse(player.Handle);
@@ -356,7 +356,7 @@ namespace VORP.Housing.Server
         }
 
 
-        private async void MoveToHouse([FromSource] Player player, string jsondata)
+        private async void MoveToHouseAsync([FromSource] Player player, string jsondata)
         {
 
             string sid = "steam:" + player.Identifiers["steam"];

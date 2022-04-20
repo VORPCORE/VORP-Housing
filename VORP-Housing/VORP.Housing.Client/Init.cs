@@ -70,7 +70,7 @@ namespace VORP.Housing.Client
             Houses[houseId].IsOwner = true;
         }
 
-        public static async Task SetBlips()
+        public static void SetBlips()
         {
             try
             {
@@ -101,7 +101,7 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        public async Task useInteriorComps()
+        public async Task UseInteriorCompsAsync()
         {
             if (!GetConfig.isLoaded) return;
 
@@ -159,7 +159,7 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        private async Task changeStatus()
+        private async Task ChangeStatusAsync()
         {
             if (!GetConfig.isLoaded) return;
             
@@ -287,7 +287,7 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        private async Task doorLockeds()
+        private async Task DoorLockedsAsync()
         {
             if (!GetConfig.isLoaded) return;
 

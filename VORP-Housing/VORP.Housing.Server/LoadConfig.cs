@@ -22,7 +22,7 @@ namespace VORP.Housing.Server
 
         public LoadConfig()
         {
-            EventHandlers[$"{API.GetCurrentResourceName()}:getConfig"] += new Action<Player>(getConfig);
+            EventHandlers[$"{API.GetCurrentResourceName()}:getConfig"] += new Action<Player>(GetConfig);
 
             LoadConfigAndLang();
         }
@@ -50,10 +50,10 @@ namespace VORP.Housing.Server
             }
             isConfigLoaded = true;
 
-            Init.LoadAll();
+            Init.LoadAllAsync();
         }
 
-        private async void getConfig([FromSource]Player source)
+        private void GetConfig([FromSource] Player source)
         {
             source.TriggerEvent($"{API.GetCurrentResourceName()}:SendConfig", ConfigString, Langs);
         }

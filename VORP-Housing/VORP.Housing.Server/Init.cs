@@ -19,13 +19,13 @@ namespace VORP.Housing.Server
         public Init()
         {
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
-            EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);
+            EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoomAsync);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
-            EventHandlers["vorp_housing:getRooms"] += new Action<int>(GetRooms);
+            EventHandlers["vorp_housing:getRooms"] += new Action<int>(GetRoomsAsync);
             EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHouses);
         }
 
-        public async void GetRooms(int source)//, CallbackDelegate cb)
+        public async void GetRoomsAsync(int source)//, CallbackDelegate cb)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace VORP.Housing.Server
             }
         }
 
-        public async void BuyRoom([FromSource] Player source, int roomId, double price)
+        public async void BuyRoomAsync([FromSource] Player source, int roomId, double price)
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
@@ -193,7 +193,7 @@ namespace VORP.Housing.Server
             }
         }
 
-        public static async Task LoadAll()
+        public static async Task LoadAllAsync()
         {
             foreach (var house in LoadConfig.Config["Houses"])
             {
