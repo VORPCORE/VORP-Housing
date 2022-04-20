@@ -22,7 +22,7 @@ namespace VORP.Housing.Server
             EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoomAsync);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
             EventHandlers["vorp_housing:getRooms"] += new Action<int>(GetRoomsAsync);
-            EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHouses);
+            EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHousesAsync);
         }
 
         public async void GetRoomsAsync(int source)//, CallbackDelegate cb)
@@ -84,7 +84,7 @@ namespace VORP.Housing.Server
             }
         }
 
-        public async void GetHouses(int source)//, CallbackDelegate cb)
+        public async void GetHousesAsync(int source)//, CallbackDelegate cb)
         {
             try
             {
