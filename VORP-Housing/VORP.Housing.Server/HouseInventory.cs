@@ -1,25 +1,24 @@
-﻿using CitizenFX.Core;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using VORP.Housing.Shared;
 
 namespace VORP.Housing.Server
 {
     public class HouseInventory : BaseScript
     {
+        private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
+
         public HouseInventory()
         {
-            EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouseAsync);
-            EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouseAsync);
+            EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouse);
+            EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouse);
 
             EventHandlers["vorp_housing:UpdateInventoryHouse"] += new Action<Player, int>(UpdateInventoryHouse);
         }
 
         #region Private Methods
-        private async void TakeFromHouseAsync([FromSource] Player player, string jsondata)
+        private void TakeFromHouse([FromSource] Player player, string jsondata)
         {
             string sid = "steam:" + player.Identifiers["steam"];
             int _source = int.Parse(player.Handle);
@@ -28,12 +27,12 @@ namespace VORP.Housing.Server
 
             JObject data = JObject.Parse(jsondata);
 
-            if (String.IsNullOrEmpty(data["number"].ToString()))
+            if (string.IsNullOrEmpty(data["number"].ToString()))
             {
                 return;
             }
 
-            if (String.IsNullOrEmpty(data["house"].ToString()))
+            if (string.IsNullOrEmpty(data["house"].ToString()))
             {
                 return;
             }
@@ -49,7 +48,7 @@ namespace VORP.Housing.Server
 
             if (number <= 0)
             {
-                player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                 return;
             }
 
@@ -82,7 +81,7 @@ namespace VORP.Housing.Server
 
                                     if (newcount < 0)
                                     {
-                                        player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                        player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                         return;
                                     }
 
@@ -91,7 +90,7 @@ namespace VORP.Housing.Server
 
                                         if (!can)
                                         {
-                                            player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                            player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
@@ -150,7 +149,7 @@ namespace VORP.Housing.Server
 
                                     if (newcount < 0)
                                     {
-                                        player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                        player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                         return;
                                     }
 
@@ -159,7 +158,7 @@ namespace VORP.Housing.Server
 
                                         if (!can)
                                         {
-                                            player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                            player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
                                         else if (newcount == 0)
@@ -200,7 +199,7 @@ namespace VORP.Housing.Server
 
                     if (limit < (itemc + number) && limit != -1)
                     {
-                        player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                        player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                         return;
                     }
 
@@ -231,7 +230,7 @@ namespace VORP.Housing.Server
 
                                         if (newcount < 0)
                                         {
-                                            player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                            player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
@@ -240,7 +239,7 @@ namespace VORP.Housing.Server
 
                                             if (!can)
                                             {
-                                                player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                                player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                                 return;
                                             }
                                             else if (newcount == 0)
@@ -303,7 +302,7 @@ namespace VORP.Housing.Server
 
                                         if (newcount < 0)
                                         {
-                                            player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                            player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
@@ -312,7 +311,7 @@ namespace VORP.Housing.Server
 
                                             if (!can)
                                             {
-                                                player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                                                player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                                 return;
                                             }
                                             else if (newcount == 0)
@@ -356,7 +355,7 @@ namespace VORP.Housing.Server
         }
 
 
-        private async void MoveToHouseAsync([FromSource] Player player, string jsondata)
+        private void MoveToHouse([FromSource] Player player, string jsondata)
         {
 
             string sid = "steam:" + player.Identifiers["steam"];
@@ -386,19 +385,19 @@ namespace VORP.Housing.Server
             int count = data["item"]["count"].ToObject<int>();
             int number = data["number"].ToObject<int>();
 
-            JArray itemBlackList = JArray.Parse(LoadConfig.Config["ItemsBlacklist"].ToString());
+            JArray itemBlackList = JArray.Parse(_configurationInstance.Config.ItemsBlacklist.ToString());
             foreach (var ibl in itemBlackList)
             {
                 if (ibl.ToString().Equals(name))
                 {
-                    player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ItemInBlacklist"], 2500);
+                    player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ItemInBlacklist, 2500);
                     return;
                 }
             }
 
             if ((number > count || number < 1) && !type.Contains("item_weapon"))
             {
-                player.TriggerEvent("vorp:TipBottom", LoadConfig.Langs["ErrorQuantity"], 2500);
+                player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                 return;
             }
 
@@ -433,7 +432,7 @@ namespace VORP.Housing.Server
 
                             if (maxWeight < (number + totalWeight))
                             {
-                                player.TriggerEvent("vorp:TipBottom", string.Format(LoadConfig.Langs["MaxWeightQuantity"], totalWeight.ToString(), maxWeight.ToString()), 2500);
+                                player.TriggerEvent("vorp:TipBottom", string.Format(_configurationInstance.Language.MaxWeightQuantity, totalWeight.ToString(), maxWeight.ToString()), 2500);
                                 return;
                             }
 
@@ -566,7 +565,7 @@ namespace VORP.Housing.Server
 
                             if (maxWeight < (number + totalWeight))
                             {
-                                player.TriggerEvent("vorp:TipBottom", string.Format(LoadConfig.Langs["MaxWeightQuantity"], totalWeight.ToString(), maxWeight.ToString()), 2500);
+                                player.TriggerEvent("vorp:TipBottom", string.Format(_configurationInstance.Language.MaxWeightQuantity, totalWeight.ToString(), maxWeight.ToString()), 2500);
                                 return;
                             }
 
@@ -665,9 +664,6 @@ namespace VORP.Housing.Server
 
                 }));
             }
-
-
-
         }
 
         private void UpdateInventoryHouse([FromSource] Player player, int houseId)

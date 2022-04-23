@@ -51,13 +51,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\PlayerExtensions.cs" />
     <Compile Include="HouseInventory.cs" />
-    <Compile Include="LoadConfig.cs" />
     <Compile Include="Init.cs" />
+    <Compile Include="PluginManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scripts\Manager.cs" />
+    <Compile Include="Utility\Common.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config.json">
+    <None Include="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="En.json">
@@ -68,6 +71,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\VORP.Housing.Shared\VORP.Housing.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

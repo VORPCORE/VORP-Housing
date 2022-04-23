@@ -10,7 +10,7 @@ namespace VORP.Housing.Client
 {
     class Functions : BaseScript
     {
-        public static async Task DrawTxt(string text, float x, float y, float fontscale, float fontsize, int r, int g, int b, int alpha, bool textcentred, bool shadow)
+        public static void DrawTxt(string text, float x, float y, float fontscale, float fontsize, int r, int g, int b, int alpha, bool textcentred, bool shadow)
         {
             long str = Function.Call<long>(Hash._CREATE_VAR_STRING, 10, "LITERAL_STRING", text);
             Function.Call(Hash.SET_TEXT_SCALE, fontscale, fontsize);
@@ -21,7 +21,7 @@ namespace VORP.Housing.Client
             Function.Call(Hash._DISPLAY_TEXT, str, x, y);
         }
 
-        public static async Task DrawTxt3D(Vector3 position, string text)
+        public static void DrawTxt3D(Vector3 position, string text)
         {
             float _x = 0.0F;
             float _y = 0.0F;

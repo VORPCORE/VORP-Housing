@@ -1,25 +1,25 @@
-﻿using CitizenFX.Core;
-using CitizenFX.Core.Native;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using VORP.Housing.Shared.Diagnostics;
+using VORP.Housing.Client.Scripts;
+using VORP.Housing.Shared;
 using VORP.Housing.Shared.Models;
+using VORP.Housing.Shared.Models.Json;
 
 namespace VORP.Housing.Client
 {
-    public class Init : BaseScript
+    public class Init : Manager
     {
+        private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
         public static Dictionary<int, House> Houses = new Dictionary<int, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
         public static bool isInInterior = false;
         public static bool isInRoom = false;
 
-        public Init()
+        public void Initialize()
         {
             EventHandlers["vorp_housing:UpdateHousesStatus"] += new Action<int, string>(UpdateHouse);
             EventHandlers["vorp_housing:UpdateRoomsStatus"] += new Action<int, string>(UpdateRoom);
@@ -32,17 +32,23 @@ namespace VORP.Housing.Client
                 TriggerServerEvent("vorp_housing:getHouses", charId);
                 TriggerServerEvent("vorp_housing:getRooms", charId);
             });
+
+            Tick += UseInteriorCompsTick;
+            Tick += ChangeStatusTick;
+            Tick += DoorLockedsTick;
         }
 
         #region Private Methods
         private void ListHouses(string json)
         {
+            Logger.Trace($"ListHouses():\r\n{json}");
             Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
             SetBlips();
         }
 
         private void ListRooms(string json)
         {
+            Logger.Trace($"ListRooms():\r\n{json}");
             Rooms = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
             //SetBlips();
             foreach (var r in Rooms)
@@ -71,27 +77,27 @@ namespace VORP.Housing.Client
             Houses[houseId].IsOwner = true;
         }
 
-        private static void SetBlips()
+        private void SetBlips()
         {
             try
             {
                 //249721687
-                foreach (var h in GetConfig.Config["Houses"])
+                foreach (HouseJson house in _configurationInstance.Config.Houses)
                 {
-                    int _blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, h["DoorsStatus"][0].ToObject<float>(), h["DoorsStatus"][1].ToObject<float>(), h["DoorsStatus"][2].ToObject<float>());
-                    if (Houses.ContainsKey(h["Id"].ToObject<int>()))
+                    int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]);
+                    if (Houses.ContainsKey((int)house.Id))
                     {
-                        if ((String.IsNullOrEmpty(Houses[h["Id"].ToObject<int>()].Identifier)))
+                        if (string.IsNullOrEmpty(Houses[(int)house.Id].Identifier))
                         {
-                            Function.Call((Hash)0x74F74D3207ED525C, _blip, 249721687, 1);
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1);
                         }
                         else
                         {
-                            Function.Call((Hash)0x74F74D3207ED525C, _blip, -2024635066, 1);
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, -2024635066, 1);
                         }
-                        Function.Call((Hash)0x9CB1A1623062F402, _blip, h["Name"].ToString());
+                        Function.Call((Hash)0x9CB1A1623062F402, blip, house.Name);
 
-                        Function.Call((Hash)0x174D0AAB11CED739, h["Id"].ToObject<int>(), h["InteriorName"].ToString()); // Load Entity Interior
+                        Function.Call((Hash)0x174D0AAB11CED739, (int)house.Id, house.InteriorName); // Load Entity Interior
                     }
                 }
             }
@@ -101,10 +107,14 @@ namespace VORP.Housing.Client
             }
         }
 
+        #region Unused Methods
         [Tick]
-        private async Task UseInteriorCompsAsync()
+        private async Task UseInteriorCompsTick()
         {
-            if (!GetConfig.isLoaded) return;
+            if (_configurationInstance.Config == null)
+            {
+                return;
+            }
 
             Vector3 pCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
             int InteriorIsIn = API.GetInteriorFromEntity(API.PlayerPedId());
@@ -112,43 +122,43 @@ namespace VORP.Housing.Client
             {
                 if (Houses[InteriorIsIn].IsOwner)
                 {
-                    JObject houseIsIn = GetConfig.Config["Houses"].FirstOrDefault(x => x["Id"].ToObject<int>() == InteriorIsIn).ToObject<JObject>();
-                    float invX = houseIsIn["Inventory"][0].ToObject<float>();
-                    float invY = houseIsIn["Inventory"][1].ToObject<float>();
-                    float invZ = houseIsIn["Inventory"][2].ToObject<float>();
-                    float invR = houseIsIn["Inventory"][3].ToObject<float>();
+                    HouseJson houseIsIn = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == InteriorIsIn);
+                    float invX = (float)houseIsIn.Inventory[0];
+                    float invY = (float)houseIsIn.Inventory[1];
+                    float invZ = (float)houseIsIn.Inventory[2];
+                    float invR = (float)houseIsIn.Inventory[3];
                     
                     if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, invX, invY, invZ, true) <= invR)
                     {
-                        await Functions.DrawTxt(GetConfig.Langs["OpenInventory"], 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
+                        Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
                         if (API.IsControlJustPressed(2, 0xC7B5340A))
                         {
-                            TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn["Name"].ToString(), InteriorIsIn);
+                            TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, InteriorIsIn);
                             TriggerServerEvent("vorp_housing:UpdateInventoryHouse", InteriorIsIn);
                         }
                     }
                 }
             }
 
-            for (int i = 0; i < GetConfig.Config["Rooms"].Count(); i++)
+            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
             {
-                int roomId = GetConfig.Config["Rooms"][i]["Id"].ToObject<int>();
+                int roomId = _configurationInstance.Config.Rooms[i].Id;
 
-                float invX = GetConfig.Config["Rooms"][i]["Inventory"][0].ToObject<float>();
-                float invY = GetConfig.Config["Rooms"][i]["Inventory"][1].ToObject<float>();
-                float invZ = GetConfig.Config["Rooms"][i]["Inventory"][2].ToObject<float>();
-                float invR = GetConfig.Config["Rooms"][i]["Inventory"][3].ToObject<float>();
+                float invX = (float)_configurationInstance.Config.Rooms[i].Inventory[0];
+                float invY = (float)_configurationInstance.Config.Rooms[i].Inventory[1];
+                float invZ = (float)_configurationInstance.Config.Rooms[i].Inventory[2];
+                float invR = (float)_configurationInstance.Config.Rooms[i].Inventory[3];
 
                 if (Rooms.ContainsKey(roomId))
                 {
-                    if (!String.IsNullOrEmpty(Rooms[roomId].Identifier))
+                    if (!string.IsNullOrEmpty(Rooms[roomId].Identifier))
                     {
                         if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, invX, invY, invZ, true) < invR)
                         {
-                            await Functions.DrawTxt(GetConfig.Langs["OpenInventory"], 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
+                            Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
                             if (API.IsControlJustPressed(2, 0xC7B5340A))
                             {
-                                TriggerEvent("vorp_inventory:OpenHouseInventory", GetConfig.Config["Rooms"][i]["Name"].ToString(), roomId);
+                                TriggerEvent("vorp_inventory:OpenHouseInventory", _configurationInstance.Config.Rooms[i].Name, roomId);
                                 TriggerServerEvent("vorp_housing:UpdateInventoryHouse", roomId);
                             }
                         }
@@ -160,17 +170,20 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        private async Task ChangeStatusAsync()
+        private async Task ChangeStatusTick()
         {
-            if (!GetConfig.isLoaded) return;
-            
-            for (int i = 0; i < GetConfig.Config["Houses"].Count(); i++)
+            if (_configurationInstance.Config == null)
             {
-                int houseId = GetConfig.Config["Houses"][i]["Id"].ToObject<int>();
+                return;
+            }
 
-                float doorStatusX = GetConfig.Config["Houses"][i]["DoorsStatus"][0].ToObject<float>();
-                float doorStatusY = GetConfig.Config["Houses"][i]["DoorsStatus"][1].ToObject<float>();
-                float doorStatusZ = GetConfig.Config["Houses"][i]["DoorsStatus"][2].ToObject<float>();
+            for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
+            {
+                int houseId = (int)_configurationInstance.Config.Houses[i].Id;
+
+                float doorStatusX = (float)_configurationInstance.Config.Houses[i].DoorsStatus[0];
+                float doorStatusY = (float)_configurationInstance.Config.Houses[i].DoorsStatus[1];
+                float doorStatusZ = (float)_configurationInstance.Config.Houses[i].DoorsStatus[2];
 
                 if (Houses.ContainsKey(houseId))
                 {
@@ -178,12 +191,12 @@ namespace VORP.Housing.Client
 
                     if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, doorStatusX, doorStatusY, doorStatusZ, true) < 2.5f)
                     {
-                        if (String.IsNullOrEmpty(Houses[houseId].Identifier))
+                        if (string.IsNullOrEmpty(Houses[houseId].Identifier))
                         {
-                            await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(GetConfig.Langs["PressToBuy"], GetConfig.Config["Houses"][i]["Price"].ToString()));
+                            Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(_configurationInstance.Language.PressToBuy, _configurationInstance.Config.Houses[i].Price));
                             if (API.IsControlJustPressed(2, 0xC7B5340A))
                             {
-                                TriggerServerEvent("vorp_housing:BuyHouse", houseId, GetConfig.Config["Houses"][i]["Price"].ToObject<double>());
+                                TriggerServerEvent("vorp_housing:BuyHouse", houseId, _configurationInstance.Config.Houses[i].Price);
                                 await Delay(5000);
                             }
                         }
@@ -192,7 +205,7 @@ namespace VORP.Housing.Client
                         {
                             if (Houses[houseId].IsOpen)
                             {
-                                await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), GetConfig.Langs["PressToClose"]);
+                                Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToClose);
 
                                 if (API.IsControlJustPressed(2, 0xC7B5340A))
                                 {
@@ -203,7 +216,7 @@ namespace VORP.Housing.Client
                             }
                             else
                             {
-                                await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), GetConfig.Langs["PressToOpen"]);
+                                Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToOpen);
 
                                 if (API.IsControlJustPressed(2, 0xC7B5340A))
                                 {
@@ -218,13 +231,13 @@ namespace VORP.Housing.Client
 
             }
 
-            for (int i = 0; i < GetConfig.Config["Rooms"].Count(); i++)
+            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
             {
-                int roomId = GetConfig.Config["Rooms"][i]["Id"].ToObject<int>();
+                int roomId = _configurationInstance.Config.Rooms[i].Id;
 
-                float doorStatusX = GetConfig.Config["Rooms"][i]["DoorsStatus"][0].ToObject<float>();
-                float doorStatusY = GetConfig.Config["Rooms"][i]["DoorsStatus"][1].ToObject<float>();
-                float doorStatusZ = GetConfig.Config["Rooms"][i]["DoorsStatus"][2].ToObject<float>();
+                float doorStatusX = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[0];
+                float doorStatusY = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[1];
+                float doorStatusZ = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[2];
 
                 if (Rooms.ContainsKey(roomId))
                 {
@@ -232,12 +245,12 @@ namespace VORP.Housing.Client
 
                     if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, doorStatusX, doorStatusY, doorStatusZ, true) < 2.5f)
                     {
-                        if (String.IsNullOrEmpty(Rooms[roomId].Identifier))
+                        if (string.IsNullOrEmpty(Rooms[roomId].Identifier))
                         {
-                            await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(GetConfig.Langs["PressToBuyRoom"], GetConfig.Config["Rooms"][i]["Price"].ToString()));
+                            Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(_configurationInstance.Language.PressToBuyRoom, _configurationInstance.Config.Rooms[i].Price));
                             if (API.IsControlJustPressed(2, 0xC7B5340A))
                             {
-                                TriggerServerEvent("vorp_housing:BuyRoom", roomId, GetConfig.Config["Rooms"][i]["Price"].ToObject<double>());
+                                TriggerServerEvent("vorp_housing:BuyRoom", roomId, _configurationInstance.Config.Rooms[i].Price);
                                 await Delay(5000);
                             }
                         }
@@ -245,13 +258,13 @@ namespace VORP.Housing.Client
                         {
                             if (!isInRoom)
                             {
-                                await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), GetConfig.Langs["PressToEnter"]);
+                                Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToEnter);
                                 if (API.IsControlJustPressed(2, 0xC7B5340A))
                                 {
                                     isInRoom = true;
-                                    float tpEnterX = GetConfig.Config["Rooms"][i]["TPEnter"][0].ToObject<float>();
-                                    float tpEnterY = GetConfig.Config["Rooms"][i]["TPEnter"][1].ToObject<float>();
-                                    float tpEnterZ = GetConfig.Config["Rooms"][i]["TPEnter"][2].ToObject<float>();
+                                    float tpEnterX = (float)_configurationInstance.Config.Rooms[i].TPEnter[0];
+                                    float tpEnterY = (float)_configurationInstance.Config.Rooms[i].TPEnter[1];
+                                    float tpEnterZ = (float)_configurationInstance.Config.Rooms[i].TPEnter[2];
                                     API.DoScreenFadeOut(500);
                                     await Delay(600);
                                     API.SetEntityCoords(API.PlayerPedId(), tpEnterX, tpEnterY, tpEnterZ, false, false, false, false);
@@ -263,13 +276,13 @@ namespace VORP.Housing.Client
                             }
                             else
                             {
-                                await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), GetConfig.Langs["PressToLeave"]);
+                                Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToLeave);
                                 if (API.IsControlJustPressed(2, 0xC7B5340A))
                                 {
                                     isInRoom = false;
-                                    float tpLeaveX = GetConfig.Config["Rooms"][i]["TPLeave"][0].ToObject<float>();
-                                    float tpLeaveY = GetConfig.Config["Rooms"][i]["TPLeave"][1].ToObject<float>();
-                                    float tpLeaveZ = GetConfig.Config["Rooms"][i]["TPLeave"][2].ToObject<float>();
+                                    float tpLeaveX = (float)_configurationInstance.Config.Rooms[i].TPLeave[0];
+                                    float tpLeaveY = (float)_configurationInstance.Config.Rooms[i].TPLeave[1];
+                                    float tpLeaveZ = (float)_configurationInstance.Config.Rooms[i].TPLeave[2];
                                     API.DoScreenFadeOut(500);
                                     await Delay(600);
                                     API.SetEntityCoords(API.PlayerPedId(), tpLeaveX, tpLeaveY, tpLeaveZ, false, false, false, false);
@@ -288,21 +301,24 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        private async Task DoorLockedsAsync()
+        private async Task DoorLockedsTick()
         {
-            if (!GetConfig.isLoaded) return;
+            if (_configurationInstance.Config == null)
+            {
+                return;
+            }
 
             Vector3 pCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
 
-            for (int i = 0; i < GetConfig.Config["Houses"].Count(); i++)
+            for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
             {
-                int houseId = GetConfig.Config["Houses"][i]["Id"].ToObject<int>();
-                for (int o = 0; o < GetConfig.Config["Houses"][i]["Doors"].Count(); o++)
+                int houseId = (int)_configurationInstance.Config.Houses[i].Id;
+                for (int o = 0; o < _configurationInstance.Config.Houses[i].Doors.Count; o++)
                 {
-                    float doorX = GetConfig.Config["Houses"][i]["Doors"][o][0].ToObject<float>();
-                    float doorY = GetConfig.Config["Houses"][i]["Doors"][o][1].ToObject<float>();
-                    float doorZ = GetConfig.Config["Houses"][i]["Doors"][o][2].ToObject<float>();
-                    float doorH = GetConfig.Config["Houses"][i]["Doors"][o][3].ToObject<float>();
+                    float doorX = (float)_configurationInstance.Config.Houses[i].Doors[o][0];
+                    float doorY = (float)_configurationInstance.Config.Houses[i].Doors[o][1];
+                    float doorZ = (float)_configurationInstance.Config.Houses[i].Doors[o][2];
+                    float doorH = (float)_configurationInstance.Config.Houses[i].Doors[o][3];
 
                     if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, doorX, doorY, doorZ, true) < 6.0f)
                     {
@@ -352,14 +368,14 @@ namespace VORP.Housing.Client
                 }
             }
 
-            for (int i = 0; i < GetConfig.Config["Rooms"].Count(); i++)
+            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
             {
-                for (int o = 0; o < GetConfig.Config["Rooms"][i]["Doors"].Count(); o++)
+                for (int o = 0; o < _configurationInstance.Config.Rooms[i].Doors.Count; o++)
                 {
-                    float doorX = GetConfig.Config["Rooms"][i]["Doors"][o][0].ToObject<float>();
-                    float doorY = GetConfig.Config["Rooms"][i]["Doors"][o][1].ToObject<float>();
-                    float doorZ = GetConfig.Config["Rooms"][i]["Doors"][o][2].ToObject<float>();
-                    float doorH = GetConfig.Config["Rooms"][i]["Doors"][o][3].ToObject<float>();
+                    float doorX = (float)_configurationInstance.Config.Rooms[i].Doors[o][0];
+                    float doorY = (float)_configurationInstance.Config.Rooms[i].Doors[o][1];
+                    float doorZ = (float)_configurationInstance.Config.Rooms[i].Doors[o][2];
+                    float doorH = (float)_configurationInstance.Config.Rooms[i].Doors[o][3];
 
                     float distance = API.Vdist(pCoords.X, pCoords.Y, pCoords.Z, doorX, doorY, doorZ);
 
@@ -378,6 +394,8 @@ namespace VORP.Housing.Client
                 }
             }
         }
+        #endregion
+
         #endregion
     }
 }

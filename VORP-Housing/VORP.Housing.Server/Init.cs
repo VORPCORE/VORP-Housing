@@ -1,41 +1,59 @@
-﻿using CitizenFX.Core;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using VORP.Housing.Shared.Diagnostics;
+using VORP.Housing.Server.Scripts;
+using VORP.Housing.Shared;
 using VORP.Housing.Shared.Models;
+using VORP.Housing.Shared.Models.Json;
 
 namespace VORP.Housing.Server
 {
-    public class Init : BaseScript
+    public class Init : Manager
     {
+        private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
         public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
         public static dynamic VORPCORE;
         
-        public Init()
+        public void Initialize()
         {
             EventHandlers["vorp_housing:BuyHouse"] += new Action<Player, uint, double>(BuyHouse);
-            EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoomAsync);
+            EventHandlers["vorp_housing:BuyRoom"] += new Action<Player, int, double>(BuyRoom);
             EventHandlers["vorp_housing:changeDoorState"] += new Action<uint, bool>(ChangeDoorState);
             EventHandlers["vorp_housing:getRooms"] += new Action<int>(GetRoomsAsync);
             EventHandlers["vorp_housing:getHouses"] += new Action<int>(GetHousesAsync);
         }
 
         #region Public Method
-        public static async Task LoadAllAsync()
+        public void LoadAll()
         {
-            foreach (var house in LoadConfig.Config["Houses"])
+            foreach (HouseJson house in _configurationInstance.Config.Houses)
             {
-                Houses.Add(house["Id"].ToObject<uint>(), new House(house["Id"].ToObject<uint>(), house["InteriorName"].ToString(), null, -1, house["Price"].ToObject<double>(), null, false, house["MaxWeight"].ToObject<int>()));
+                Houses.Add(house.Id, new House
+                {
+                    Id = house.Id,
+                    Interior = house.InteriorName, 
+                    Identifier = null, 
+                    CharIdentifier = -1, 
+                    Price = house.Price, 
+                    Furniture = null, 
+                    IsOpen = false, 
+                    MaxWeight = house.MaxWeight
+                });
             }
 
-            foreach (var room in LoadConfig.Config["Rooms"])
+            foreach (RoomJson room in _configurationInstance.Config.Rooms)
             {
-                Rooms.Add(room["Id"].ToObject<int>(), new Room(room["Id"].ToObject<int>(), null, -1, room["Price"].ToObject<double>(), room["MaxWeight"].ToObject<int>()));
+                Rooms.Add(room.Id, new Room
+                {
+                    Id = room.Id, 
+                    Identifier = null, 
+                    CharIdentifier = -1, 
+                    Price = room.Price, 
+                    MaxWeight = room.MaxWeight
+                });
             }
         }
         #endregion
@@ -180,15 +198,15 @@ namespace VORP.Housing.Server
                 Houses[houseId].BuyHouse(sid, charIdentifier);
                 TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
                 source.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
-                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
+                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
             }
             else
             {
-                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["NoMoney"], 4000);
+                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
             }
         }
 
-        private async void BuyRoomAsync([FromSource] Player source, int roomId, double price)
+        private void BuyRoom([FromSource] Player source, int roomId, double price)
         {
             string sid = "steam:" + source.Identifiers["steam"];
             int _source = int.Parse(source.Handle);
@@ -201,11 +219,11 @@ namespace VORP.Housing.Server
                 Exports["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
                 source.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
                 //source.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
-                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["YouBoughtHouse"], 4000);
+                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
             }
             else
             {
-                source.TriggerEvent("vorp:TipRight", LoadConfig.Langs["NoMoney"], 4000);
+                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
             }
         }
 

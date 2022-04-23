@@ -9,8 +9,17 @@
     <Import_RootNamespace>VORP.Housing.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BasePluginManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationSingleton.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\Logger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ObjectExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Json\ConfigJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\House.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Json\LangJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Room.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Models\Json\" />
   </ItemGroup>
 </Project>
