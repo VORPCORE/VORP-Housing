@@ -13,13 +13,13 @@ namespace VORP.Housing.Shared
     {
         private const string CONFIG_NAME = "config.json";
 
-        private static ConfigurationSingleton _instance = null;
-        private static readonly object _padlock = new object();
-
         public LangJson Language { get; private set; }
         public ConfigJson Config { get; private set; }
 
         #region Singleton Setup
+        private static ConfigurationSingleton _instance = null;
+        private static readonly object _padlock = new object();
+
         ConfigurationSingleton() { }
 
         public static ConfigurationSingleton Instance
