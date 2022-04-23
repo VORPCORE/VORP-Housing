@@ -82,7 +82,7 @@ namespace VORP.Housing.Server
             {
                 await VendorReady(); // wait till ghmattimysql resource has started
 
-                _configurationInstance.SetupConfig();
+                _configurationInstance.LoadConfig();
 
                 //ItemsDB.Init();
                 Init.Initialize();

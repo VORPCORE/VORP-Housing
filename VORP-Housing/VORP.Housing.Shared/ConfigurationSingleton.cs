@@ -48,7 +48,7 @@ namespace VORP.Housing.Shared
         /// <summary>
         /// Import the housing settings from the "config.json"
         /// </summary>
-        public void SetupConfig()
+        public void LoadConfig()
         {
             try
             {
@@ -87,7 +87,7 @@ namespace VORP.Housing.Shared
             }
             catch (Exception ex)
             {
-                Logger.CriticalError(ex, $"Shared.ConfigJson.GetConfig()");
+                Logger.CriticalError(ex, $"Shared.ConfigJson.LoadConfig()");
             }
         }
         #endregion

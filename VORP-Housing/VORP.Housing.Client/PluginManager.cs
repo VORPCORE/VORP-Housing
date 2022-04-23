@@ -22,7 +22,7 @@ namespace VORP.Housing.Client
 
                 Instance = this;
 
-                _configurationInstance.SetupConfig();
+                _configurationInstance.LoadConfig();
 
                 // control the start up order of each script
                 Init.Initialize();
