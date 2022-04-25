@@ -64,6 +64,7 @@ namespace VORP.Housing.Shared
                 // Workaround until a solution is found for mysterious parsing issue
                 int startingParseIndex = fileContents.IndexOf('{');
                 Config = JsonConvert.DeserializeObject<ConfigJson>(fileContents.Substring(startingParseIndex));
+
                 Logger.Trace($"{CONFIG_NAME} loaded");
 
                 LoadLanguage();
@@ -93,7 +94,7 @@ namespace VORP.Housing.Shared
                     language = DEFAULT_LANG;
                 }
 
-                languageFileContents = LoadResourceFile(GetCurrentResourceName(), $"/{language}.json");
+                languageFileContents = LoadResourceFile(GetCurrentResourceName(), $"/languages/{language}.json");
 
                 if (string.IsNullOrEmpty(languageFileContents))
                 {
@@ -104,6 +105,7 @@ namespace VORP.Housing.Shared
                 // Workaround until a solution is found for mysterious parsing issue
                 int startingParseIndex = languageFileContents.IndexOf('{');
                 Language = JsonConvert.DeserializeObject<LangJson>(languageFileContents.Substring(startingParseIndex));
+
                 Logger.Trace($"Language Loaded: {language}");
             }
             catch (Exception ex)
