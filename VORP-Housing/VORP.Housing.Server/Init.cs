@@ -63,26 +63,11 @@ namespace VORP.Housing.Server
         {
             try
             {
-                // TODO: Convert this into a method similar to Inventory's PluginManager class
-                if (VORPCORE == null)
-                {
-                    Logger.Error("Server.Init.GetRooms(): VORPCORE is null");
-                    return;
-                }
+                dynamic userCharacter = VORPCORE.getUser(source).getUsedCharacter;
+                int charIdentifier = userCharacter.charIdentifier;
 
-                // TODO: Convert this into a method similar to Inventory's PluginManager class
-                if (VORPCORE.getUser(source) == null)
-                {
-                    Logger.Error("Server.Init.GetRooms(): VORPCORE.getUser(source) is null");
-                    return;
-                }
-
-                dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
-                int charIdentifier = UserCharacter.charIdentifier;
-
-                PlayerList PL = Players;
-                Player _source = PL[source];
-                string sid = "steam:" + _source.Identifiers["steam"];
+                Player player = Players[source];
+                string sid = "steam:" + player.Identifiers["steam"];
 
                 dynamic tableExist = await Exports["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'rooms' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
@@ -94,7 +79,7 @@ namespace VORP.Housing.Server
                 dynamic result = await Exports["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
                 Logger.Debug(JsonConvert.SerializeObject(result));
 
-                Dictionary<int, Room> _Rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
+                Dictionary<int, Room> rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
 
                 if (result != null && result.Count > 0)
                 {
@@ -103,14 +88,13 @@ namespace VORP.Housing.Server
                         int roomId = r.interiorId;
                         string identifier = r.identifier;
                         int charidentifier = r.charidentifier;
-                        _Rooms[roomId].Identifier = identifier;
-                        _Rooms[roomId].CharIdentifier = charidentifier;
-
+                        rooms[roomId].Identifier = identifier;
+                        rooms[roomId].CharIdentifier = charidentifier;
                     }
                 }
 
-                string rooms = JsonConvert.SerializeObject(_Rooms);
-                TriggerClientEvent("vorp_housing:ListRooms", rooms);
+                string roomsString = JsonConvert.SerializeObject(rooms);
+                TriggerClientEvent("vorp_housing:ListRooms", roomsString);
             }
             catch (Exception ex)
             {
@@ -118,15 +102,14 @@ namespace VORP.Housing.Server
             }
         }
 
-        private async void GetHousesAsync(int source)//, CallbackDelegate cb)
+        private async void GetHousesAsync(int source)
         {
             try
             {
-                PlayerList PL = Players;
-                Player _source = PL[source];
-                string sid = "steam:" + _source.Identifiers["steam"];
+                Player player = Players[source];
+                string sid = "steam:" + player.Identifiers["steam"];
 
-                Dictionary<uint, House> _Houses = Houses.ToDictionary(h => h.Key, h => h.Value);
+                Dictionary<uint, House> houses = Houses.ToDictionary(h => h.Key, h => h.Value);
 
                 dynamic tableExist = await Exports["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'housing' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
@@ -147,31 +130,25 @@ namespace VORP.Housing.Server
                         string identifier = r.identifier;
                         int charidentifier = r.charidentifier;
                         string furniture = "{}";
-                        if (!String.IsNullOrEmpty(r.furniture))
+                        if (!string.IsNullOrEmpty(r.furniture))
                         {
                             furniture = r.furniture;
                         }
-                        _Houses[houseId].Identifier = identifier;
-                        _Houses[houseId].CharIdentifier = charidentifier;
-                        _Houses[houseId].Furniture = furniture;
-                        _Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
+
+                        houses[houseId].Identifier = identifier;
+                        houses[houseId].CharIdentifier = charidentifier;
+                        houses[houseId].Furniture = furniture;
+                        houses[houseId].IsOpen = Convert.ToBoolean(r.open);
 
                         if (identifier.Equals(sid))
                         {
-                            _Houses[houseId].IsOwner = true;
+                            houses[houseId].IsOwner = true;
                         }
-
                     }
-                    string houses = JsonConvert.SerializeObject(_Houses);
-                    TriggerClientEvent("vorp_housing:ListHouses", houses);
-                    //cb(houses);
                 }
-                else
-                {
-                    string houses = JsonConvert.SerializeObject(_Houses);
-                    TriggerClientEvent("vorp_housing:ListHouses", houses);
-                    //cb(houses);
-                }
+
+                string housesString = JsonConvert.SerializeObject(houses);
+                TriggerClientEvent("vorp_housing:ListHouses", housesString);
             }
             catch (Exception ex)
             {
@@ -185,45 +162,45 @@ namespace VORP.Housing.Server
             TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
         }
 
-        private void BuyHouse([FromSource]Player source, uint houseId, double price)
+        private void BuyHouse([FromSource]Player player, uint houseId, double price)
         {
-            string sid = "steam:" + source.Identifiers["steam"];
-            int _source = int.Parse(source.Handle);
-            dynamic UserCharacter = VORPCORE.getUser(_source).getUsedCharacter;
+            string sid = "steam:" + player.Identifiers["steam"];
+            int source = int.Parse(player.Handle);
+            dynamic UserCharacter = VORPCORE.getUser(source).getUsedCharacter;
             int charIdentifier = UserCharacter.charIdentifier;
             double money = UserCharacter.money;
             if (money >= price)
             {
-                TriggerEvent("vorp:removeMoney", _source, 0, price);
+                TriggerEvent("vorp:removeMoney", source, 0, price);
                 Houses[houseId].BuyHouse(sid, charIdentifier);
                 TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
-                source.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
-                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                player.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
+                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
             }
             else
             {
-                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
             }
         }
 
-        private void BuyRoom([FromSource] Player source, int roomId, double price)
+        private void BuyRoom([FromSource] Player player, int roomId, double price)
         {
-            string sid = "steam:" + source.Identifiers["steam"];
-            int _source = int.Parse(source.Handle);
-            dynamic UserCharacter = VORPCORE.getUser(_source).getUsedCharacter;
-            int charIdentifier = UserCharacter.charIdentifier;
-            double money = UserCharacter.money;
+            string sid = "steam:" + player.Identifiers["steam"];
+            int source = int.Parse(player.Handle);
+            dynamic userCharacter = VORPCORE.getUser(source).getUsedCharacter;
+            int charIdentifier = userCharacter.charIdentifier;
+            double money = userCharacter.money;
             if (money >= price)
             {
-                TriggerEvent("vorp:removeMoney", _source, 0, price);
+                TriggerEvent("vorp:removeMoney", source, 0, price);
                 Exports["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
-                source.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
-                //source.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
-                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
+                //player.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
+                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
             }
             else
             {
-                source.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
             }
         }
 

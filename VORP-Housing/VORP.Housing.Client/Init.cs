@@ -116,12 +116,12 @@ namespace VORP.Housing.Client
             }
 
             Vector3 pCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
-            int InteriorIsIn = API.GetInteriorFromEntity(API.PlayerPedId());
-            if (Houses.ContainsKey(InteriorIsIn))
+            int interiorIsIn = API.GetInteriorFromEntity(API.PlayerPedId());
+            if (Houses.ContainsKey(interiorIsIn))
             {
-                if (Houses[InteriorIsIn].IsOwner)
+                if (Houses[interiorIsIn].IsOwner)
                 {
-                    HouseJson houseIsIn = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == InteriorIsIn);
+                    HouseJson houseIsIn = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == interiorIsIn);
                     float invX = (float)houseIsIn.Inventory[0];
                     float invY = (float)houseIsIn.Inventory[1];
                     float invZ = (float)houseIsIn.Inventory[2];
@@ -132,8 +132,8 @@ namespace VORP.Housing.Client
                         Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
                         if (API.IsControlJustPressed(2, 0xC7B5340A))
                         {
-                            TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, InteriorIsIn);
-                            TriggerServerEvent("vorp_housing:UpdateInventoryHouse", InteriorIsIn);
+                            TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, interiorIsIn);
+                            TriggerServerEvent("vorp_housing:UpdateInventoryHouse", interiorIsIn);
                         }
                     }
                 }

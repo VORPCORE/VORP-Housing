@@ -13,19 +13,18 @@ namespace VORP.Housing.Server
         {
             EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouse);
             EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouse);
-
             EventHandlers["vorp_housing:UpdateInventoryHouse"] += new Action<Player, int>(UpdateInventoryHouse);
         }
 
         #region Private Methods
-        private void TakeFromHouse([FromSource] Player player, string jsondata)
+        private void TakeFromHouse([FromSource] Player player, string jsonData)
         {
             string sid = "steam:" + player.Identifiers["steam"];
-            int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
-            int charIdentifier = UserCharacter.charIdentifier;
+            int source = int.Parse(player.Handle);
+            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
+            int charIdentifier = userCharacter.charIdentifier;
 
-            JObject data = JObject.Parse(jsondata);
+            JObject data = JObject.Parse(jsonData);
 
             if (string.IsNullOrEmpty(data["number"].ToString()))
             {
@@ -54,7 +53,7 @@ namespace VORP.Housing.Server
 
             if (type.Contains("item_weapon"))
             {
-                int weapId = data["item"]["id"].ToObject<int>();
+                int weaponId = data["item"]["id"].ToObject<int>();
 
                 if (Init.Rooms.ContainsKey(houseId))
                 {
@@ -66,46 +65,47 @@ namespace VORP.Housing.Server
                         }
                         else
                         {
-                            string inv = result[0].inventory;
+                            string inventory = result[0].inventory;
 
-                            if (!String.IsNullOrEmpty(inv))
+                            if (!string.IsNullOrEmpty(inventory))
                             {
-                                JArray houseData = JArray.Parse(inv);
+                                JArray houseData = JArray.Parse(inventory);
 
                                 JToken itemFound = houseData.FirstOrDefault(x => x["name"].ToString().Equals(name));
 
                                 if (itemFound != null)
                                 {
                                     int indexItem = houseData.IndexOf(itemFound);
-                                    int newcount = houseData[indexItem]["count"].ToObject<int>() - number;
+                                    int newCount = houseData[indexItem]["count"].ToObject<int>() - number;
 
-                                    if (newcount < 0)
+                                    if (newCount < 0)
                                     {
                                         player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                         return;
                                     }
 
-                                    TriggerEvent("vorpCore:canCarryWeapons", int.Parse(player.Handle), number, new Action<bool>((can) =>
+                                    TriggerEvent("vorpCore:canCarryWeapons", int.Parse(player.Handle), number, new Action<bool>((allowed) =>
                                     {
 
-                                        if (!can)
+                                        if (!allowed)
                                         {
                                             player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
-                                        else if (newcount == 0)
+                                        else if (newCount == 0)
                                         {
                                             houseData.RemoveAt(indexItem);
                                         }
 
-                                        TriggerEvent("vorpCore:giveWeapon", _source, weapId, 0);
+                                        TriggerEvent("vorpCore:giveWeapon", source, weaponId, 0);
                                         Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                        JObject items = new JObject();
-
-                                        items.Add("itemList", houseData);
-                                        items.Add("action", "setSecondInventoryItems");
+                                        JObject items = new JObject
+                                        {
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
+                                        };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                     }));
@@ -134,45 +134,46 @@ namespace VORP.Housing.Server
                         }
                         else
                         {
-                            string inv = result[0].inventory;
+                            string inventory = result[0].inventory;
 
-                            if (!String.IsNullOrEmpty(inv))
+                            if (!string.IsNullOrEmpty(inventory))
                             {
-                                JArray houseData = JArray.Parse(inv);
+                                JArray houseData = JArray.Parse(inventory);
 
                                 JToken itemFound = houseData.FirstOrDefault(x => x["name"].ToString().Equals(name));
 
                                 if (itemFound != null)
                                 {
                                     int indexItem = houseData.IndexOf(itemFound);
-                                    int newcount = houseData[indexItem]["count"].ToObject<int>() - number;
+                                    int newCount = houseData[indexItem]["count"].ToObject<int>() - number;
 
-                                    if (newcount < 0)
+                                    if (newCount < 0)
                                     {
                                         player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                         return;
                                     }
 
-                                    TriggerEvent("vorpCore:canCarryWeapons", int.Parse(player.Handle), number, new Action<dynamic>((can) =>
+                                    TriggerEvent("vorpCore:canCarryWeapons", int.Parse(player.Handle), number, new Action<dynamic>((allowed) =>
                                     {
 
-                                        if (!can)
+                                        if (!allowed)
                                         {
                                             player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
-                                        else if (newcount == 0)
+                                        else if (newCount == 0)
                                         {
                                             houseData.RemoveAt(indexItem);
                                         }
 
-                                        TriggerEvent("vorpCore:giveWeapon", _source, weapId, 0);
+                                        TriggerEvent("vorpCore:giveWeapon", source, weaponId, 0);
                                         Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                        JObject items = new JObject();
-
-                                        items.Add("itemList", houseData);
-                                        items.Add("action", "setSecondInventoryItems");
+                                        JObject items = new JObject
+                                        {
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
+                                        };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                     }));
@@ -193,11 +194,11 @@ namespace VORP.Housing.Server
             }
             else
             {
-                TriggerEvent("vorpCore:getItemCount", int.Parse(player.Handle), new Action<dynamic>((mycount) =>
+                TriggerEvent("vorpCore:getItemCount", int.Parse(player.Handle), new Action<dynamic>((myCount) =>
                 {
-                    int itemc = mycount;
+                    int itemCount = myCount;
 
-                    if (limit < (itemc + number) && limit != -1)
+                    if (limit < (itemCount + number) && limit != -1)
                     {
                         player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                         return;
@@ -205,7 +206,6 @@ namespace VORP.Housing.Server
 
                     if (Init.Rooms.ContainsKey(houseId))
                     {
-
                         Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                         {
                             if (result.Count == 0)
@@ -214,11 +214,11 @@ namespace VORP.Housing.Server
                             }
                             else
                             {
-                                string inv = result[0].inventory;
+                                string inventory = result[0].inventory;
 
-                                if (!String.IsNullOrEmpty(inv))
+                                if (!string.IsNullOrEmpty(inventory))
                                 {
-                                    JArray houseData = JArray.Parse(inv);
+                                    JArray houseData = JArray.Parse(inventory);
 
                                     JToken itemFound = houseData.FirstOrDefault(x => x["name"].ToString().Equals(name));
 
@@ -226,23 +226,23 @@ namespace VORP.Housing.Server
                                     {
                                         int indexItem = houseData.IndexOf(itemFound);
 
-                                        int newcount = houseData[indexItem]["count"].ToObject<int>() - number;
+                                        int newCount = houseData[indexItem]["count"].ToObject<int>() - number;
 
-                                        if (newcount < 0)
+                                        if (newCount < 0)
                                         {
                                             player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
-                                        TriggerEvent("vorpCore:canCarryItems", int.Parse(player.Handle), number, new Action<dynamic>((can) =>
+                                        TriggerEvent("vorpCore:canCarryItems", int.Parse(player.Handle), number, new Action<dynamic>((allowed) =>
                                         {
 
-                                            if (!can)
+                                            if (!allowed)
                                             {
                                                 player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                                 return;
                                             }
-                                            else if (newcount == 0)
+                                            else if (newCount == 0)
                                             {
                                                 houseData.RemoveAt(indexItem);
                                             }
@@ -254,10 +254,11 @@ namespace VORP.Housing.Server
                                             TriggerEvent("vorpCore:addItem", int.Parse(player.Handle), name, number);
                                             Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                            JObject items = new JObject();
-
-                                            items.Add("itemList", houseData);
-                                            items.Add("action", "setSecondInventoryItems");
+                                            JObject items = new JObject
+                                            {
+                                                { "itemList", houseData },
+                                                { "action", "setSecondInventoryItems" }
+                                            };
 
                                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                         }));
@@ -286,11 +287,11 @@ namespace VORP.Housing.Server
                             }
                             else
                             {
-                                string inv = result[0].inventory;
+                                string inventory = result[0].inventory;
 
-                                if (!String.IsNullOrEmpty(inv))
+                                if (!string.IsNullOrEmpty(inventory))
                                 {
-                                    JArray houseData = JArray.Parse(inv);
+                                    JArray houseData = JArray.Parse(inventory);
 
                                     JToken itemFound = houseData.FirstOrDefault(x => x["name"].ToString().Equals(name));
 
@@ -298,23 +299,23 @@ namespace VORP.Housing.Server
                                     {
                                         int indexItem = houseData.IndexOf(itemFound);
 
-                                        int newcount = houseData[indexItem]["count"].ToObject<int>() - number;
+                                        int newCount = houseData[indexItem]["count"].ToObject<int>() - number;
 
-                                        if (newcount < 0)
+                                        if (newCount < 0)
                                         {
                                             player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                             return;
                                         }
 
-                                        TriggerEvent("vorpCore:canCarryItems", int.Parse(player.Handle), number, new Action<dynamic>((can) =>
+                                        TriggerEvent("vorpCore:canCarryItems", int.Parse(player.Handle), number, new Action<dynamic>((allowed) =>
                                         {
 
-                                            if (!can)
+                                            if (!allowed)
                                             {
                                                 player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
                                                 return;
                                             }
-                                            else if (newcount == 0)
+                                            else if (newCount == 0)
                                             {
                                                 houseData.RemoveAt(indexItem);
                                             }
@@ -326,10 +327,11 @@ namespace VORP.Housing.Server
                                             TriggerEvent("vorpCore:addItem", int.Parse(player.Handle), name, number);
                                             Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                            JObject items = new JObject();
-
-                                            items.Add("itemList", houseData);
-                                            items.Add("action", "setSecondInventoryItems");
+                                            JObject items = new JObject
+                                            {
+                                                { "itemList", houseData },
+                                                { "action", "setSecondInventoryItems" }
+                                            };
 
                                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                         }));
@@ -344,33 +346,28 @@ namespace VORP.Housing.Server
                                     Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
                                 }
                             }
-
                         }));
                     }
-
-
                 }), name.Trim());
             }
-
         }
 
-
-        private void MoveToHouse([FromSource] Player player, string jsondata)
+        private void MoveToHouse([FromSource] Player player, string jsonData)
         {
 
             string sid = "steam:" + player.Identifiers["steam"];
-            int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
-            int charIdentifier = UserCharacter.charIdentifier;
+            int source = int.Parse(player.Handle);
+            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
+            int charIdentifier = userCharacter.charIdentifier;
 
-            JObject data = JObject.Parse(jsondata);
+            JObject data = JObject.Parse(jsonData);
 
-            if (String.IsNullOrEmpty(data["number"].ToString()))
+            if (string.IsNullOrEmpty(data["number"].ToString()))
             {
                 return;
             }
 
-            if (String.IsNullOrEmpty(data["house"].ToString()))
+            if (string.IsNullOrEmpty(data["house"].ToString()))
             {
                 return;
             }
@@ -386,9 +383,9 @@ namespace VORP.Housing.Server
             int number = data["number"].ToObject<int>();
 
             JArray itemBlackList = JArray.Parse(_configurationInstance.Config.ItemsBlacklist.ToString());
-            foreach (var ibl in itemBlackList)
+            foreach (var blackListItem in itemBlackList)
             {
-                if (ibl.ToString().Equals(name))
+                if (blackListItem.ToString().Equals(name))
                 {
                     player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ItemInBlacklist, 2500);
                     return;
@@ -411,11 +408,11 @@ namespace VORP.Housing.Server
                     }
                     else
                     {
-                        string inv = result[0].inventory;
+                        string inventory = result[0].inventory;
 
-                        if (!String.IsNullOrEmpty(inv))
+                        if (!string.IsNullOrEmpty(inventory))
                         {
-                            JArray houseData = JArray.Parse(inv);
+                            JArray houseData = JArray.Parse(inventory);
 
                             int totalWeight = 0;
                             foreach (var hd in houseData)
@@ -427,7 +424,7 @@ namespace VORP.Housing.Server
 
                             if (type.Contains("item_weapon"))
                             {
-                                number = 1; //Fix Count 0
+                                number = 1; // fix count 0
                             }
 
                             if (maxWeight < (number + totalWeight))
@@ -439,16 +436,17 @@ namespace VORP.Housing.Server
                             if (type.Contains("item_weapon"))
                             {
                                 data["item"]["count"] = number;
-                                int weapId = data["item"]["id"].ToObject<int>();
+                                int weaponId = data["item"]["id"].ToObject<int>();
                                 houseData.Add(data["item"]);
 
-                                TriggerEvent("vorpCore:subWeapon", _source, weapId);
+                                TriggerEvent("vorpCore:subWeapon", source, weaponId);
                                 Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
@@ -465,32 +463,31 @@ namespace VORP.Housing.Server
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                     Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
                                     Debug.WriteLine(houseData.ToString().Replace(Environment.NewLine, " "));
-                                    JObject items = new JObject();
-
-                                    items.Add("itemList", houseData);
-                                    items.Add("action", "setSecondInventoryItems");
+                                    JObject items = new JObject
+                                    {
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
+                                    };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
-
                                 }
                                 else
                                 {
                                     data["item"]["count"] = number;
                                     houseData.Add(data["item"]);
-
-
+                                    
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                     Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                    JObject items = new JObject();
-
-                                    items.Add("itemList", houseData);
-                                    items.Add("action", "setSecondInventoryItems");
+                                    JObject items = new JObject
+                                    {
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
+                                    };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                 }
                             }
-
                         }
                         else
                         {
@@ -503,13 +500,14 @@ namespace VORP.Housing.Server
                                 int weapId = data["item"]["id"].ToObject<int>();
                                 houseData.Add(data["item"]);
 
-                                TriggerEvent("vorpCore:subWeapon", _source, weapId);
+                                TriggerEvent("vorpCore:subWeapon", source, weapId);
                                 Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
@@ -518,20 +516,19 @@ namespace VORP.Housing.Server
                                 data["item"]["count"] = number;
                                 houseData.Add(data["item"]);
 
-
                                 TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                 Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
                         }
                     }
-
                 }));
             }
             else // Houses
@@ -544,11 +541,11 @@ namespace VORP.Housing.Server
                     }
                     else
                     {
-                        string inv = result[0].inventory;
+                        string inventory = result[0].inventory;
 
-                        if (!String.IsNullOrEmpty(inv))
+                        if (!string.IsNullOrEmpty(inventory))
                         {
-                            JArray houseData = JArray.Parse(inv);
+                            JArray houseData = JArray.Parse(inventory);
 
                             int totalWeight = 0;
                             foreach (var hd in houseData)
@@ -560,7 +557,7 @@ namespace VORP.Housing.Server
 
                             if (type.Contains("item_weapon"))
                             {
-                                number = 1; //Fix Count 0
+                                number = 1; // fix count 0
                             }
 
                             if (maxWeight < (number + totalWeight))
@@ -572,16 +569,17 @@ namespace VORP.Housing.Server
                             if (type.Contains("item_weapon"))
                             {
                                 data["item"]["count"] = number;
-                                int weapId = data["item"]["id"].ToObject<int>();
+                                int weaponId = data["item"]["id"].ToObject<int>();
                                 houseData.Add(data["item"]);
 
-                                TriggerEvent("vorpCore:subWeapon", _source, weapId);
+                                TriggerEvent("vorpCore:subWeapon", source, weaponId);
                                 Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
@@ -597,28 +595,27 @@ namespace VORP.Housing.Server
 
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                     Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
-                                    JObject items = new JObject();
-
-                                    items.Add("itemList", houseData);
-                                    items.Add("action", "setSecondInventoryItems");
+                                    JObject items = new JObject
+                                    {
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
+                                    };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
-
-
                                 }
                                 else
                                 {
                                     data["item"]["count"] = number;
                                     houseData.Add(data["item"]);
 
-
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                     Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                    JObject items = new JObject();
-
-                                    items.Add("itemList", houseData);
-                                    items.Add("action", "setSecondInventoryItems");
+                                    JObject items = new JObject
+                                    {
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
+                                    };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                                 }
@@ -631,16 +628,17 @@ namespace VORP.Housing.Server
                             if (type.Contains("item_weapon"))
                             {
                                 data["item"]["count"] = 1;
-                                int weapId = data["item"]["id"].ToObject<int>();
+                                int weaponId = data["item"]["id"].ToObject<int>();
                                 houseData.Add(data["item"]);
 
-                                TriggerEvent("vorpCore:subWeapon", _source, weapId);
+                                TriggerEvent("vorpCore:subWeapon", source, weaponId);
                                 Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
@@ -652,16 +650,16 @@ namespace VORP.Housing.Server
                                 TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
                                 Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
-                                JObject items = new JObject();
-
-                                items.Add("itemList", houseData);
-                                items.Add("action", "setSecondInventoryItems");
+                                JObject items = new JObject
+                                {
+                                    { "itemList", houseData },
+                                    { "action", "setSecondInventoryItems" }
+                                };
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                             }
                         }
                     }
-
                 }));
             }
         }
@@ -670,22 +668,21 @@ namespace VORP.Housing.Server
         {
             string sid = "steam:" + player.Identifiers["steam"];
 
-            int _source = int.Parse(player.Handle);
-            dynamic UserCharacter = Init.VORPCORE.getUser(_source).getUsedCharacter;
-            int charIdentifier = UserCharacter.charIdentifier;
+            int source = int.Parse(player.Handle);
+            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
+            int charIdentifier = userCharacter.charIdentifier;
 
             if (Init.Rooms.ContainsKey(houseId))
             {
-
                 Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count != 0)
                     {
                         JObject items = new JObject();
 
-                        string inv = result[0].inventory;
+                        string inventory = result[0].inventory;
 
-                        if (String.IsNullOrEmpty(inv))
+                        if (string.IsNullOrEmpty(inventory))
                         {
                             items.Add("itemList", "[]");
                             items.Add("action", "setSecondInventoryItems");
@@ -694,28 +691,26 @@ namespace VORP.Housing.Server
                         }
                         else
                         {
-                            JArray data = JArray.Parse(inv);
+                            JArray data = JArray.Parse(inventory);
                             items.Add("itemList", data);
                             items.Add("action", "setSecondInventoryItems");
 
                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
                         }
                     }
-
                 }));
             }
             else
             {
-
                 Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count != 0)
                     {
                         JObject items = new JObject();
 
-                        string inv = result[0].inventory;
+                        string inventory = result[0].inventory;
 
-                        if (String.IsNullOrEmpty(inv))
+                        if (string.IsNullOrEmpty(inventory))
                         {
                             items.Add("itemList", "[]");
                             items.Add("action", "setSecondInventoryItems");
@@ -724,7 +719,7 @@ namespace VORP.Housing.Server
                         }
                         else
                         {
-                            JArray data = JArray.Parse(inv);
+                            JArray data = JArray.Parse(inventory);
                             items.Add("itemList", data);
                             items.Add("action", "setSecondInventoryItems");
 
