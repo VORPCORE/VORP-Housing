@@ -84,20 +84,20 @@ namespace VORP.Housing.Client
                 //249721687
                 foreach (HouseJson house in _configurationInstance.Config.Houses)
                 {
-                    int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]);
+                    int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]); // Blip MAP::BLIP_ADD_FOR_COORDS
                     if (Houses.ContainsKey((int)house.Id))
                     {
                         if (string.IsNullOrEmpty(Houses[(int)house.Id].Identifier))
                         {
-                            Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1);
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1); // void MAP::SET_BLIP_SPRITE
                         }
                         else
                         {
-                            Function.Call((Hash)0x74F74D3207ED525C, blip, -2024635066, 1);
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, -2024635066, 1); // void MAP::SET_BLIP_SPRITE
                         }
-                        Function.Call((Hash)0x9CB1A1623062F402, blip, house.Name);
+                        Function.Call((Hash)0x9CB1A1623062F402, blip, house.Name); // void MAP::_SET_BLIP_NAME_FROM_PLAYER_STRING
 
-                        Function.Call((Hash)0x174D0AAB11CED739, (int)house.Id, house.InteriorName); // Load Entity Interior
+                        Function.Call((Hash)0x174D0AAB11CED739, (int)house.Id, house.InteriorName); // void INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET
                     }
                 }
             }
@@ -130,7 +130,7 @@ namespace VORP.Housing.Client
                     if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, invX, invY, invZ, true) <= invR)
                     {
                         Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
-                        if (API.IsControlJustPressed(2, 0xC7B5340A))
+                        if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                         {
                             TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, interiorIsIn);
                             TriggerServerEvent("vorp_housing:UpdateInventoryHouse", interiorIsIn);
@@ -155,7 +155,7 @@ namespace VORP.Housing.Client
                         if (API.GetDistanceBetweenCoords(pCoords.X, pCoords.Y, pCoords.Z, invX, invY, invZ, true) < invR)
                         {
                             Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
-                            if (API.IsControlJustPressed(2, 0xC7B5340A))
+                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                             {
                                 TriggerEvent("vorp_inventory:OpenHouseInventory", _configurationInstance.Config.Rooms[i].Name, roomId);
                                 TriggerServerEvent("vorp_housing:UpdateInventoryHouse", roomId);
@@ -163,9 +163,7 @@ namespace VORP.Housing.Client
                         }
                     }
                 }
-
             }
-
         }
 
         [Tick]
@@ -193,7 +191,7 @@ namespace VORP.Housing.Client
                         if (string.IsNullOrEmpty(Houses[houseId].Identifier))
                         {
                             Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(_configurationInstance.Language.PressToBuy, _configurationInstance.Config.Houses[i].Price));
-                            if (API.IsControlJustPressed(2, 0xC7B5340A))
+                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                             {
                                 TriggerServerEvent("vorp_housing:BuyHouse", houseId, _configurationInstance.Config.Houses[i].Price);
                                 await Delay(5000);
@@ -206,7 +204,7 @@ namespace VORP.Housing.Client
                             {
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToClose);
 
-                                if (API.IsControlJustPressed(2, 0xC7B5340A))
+                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
                                     Houses[houseId].IsOpen = false;
                                     TriggerServerEvent("vorp_housing:changeDoorState", houseId, false);
@@ -217,7 +215,7 @@ namespace VORP.Housing.Client
                             {
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToOpen);
 
-                                if (API.IsControlJustPressed(2, 0xC7B5340A))
+                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
                                     Houses[houseId].IsOpen = true;
                                     TriggerServerEvent("vorp_housing:changeDoorState", houseId, true);
@@ -247,7 +245,7 @@ namespace VORP.Housing.Client
                         if (string.IsNullOrEmpty(Rooms[roomId].Identifier))
                         {
                             Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), string.Format(_configurationInstance.Language.PressToBuyRoom, _configurationInstance.Config.Rooms[i].Price));
-                            if (API.IsControlJustPressed(2, 0xC7B5340A))
+                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                             {
                                 TriggerServerEvent("vorp_housing:BuyRoom", roomId, _configurationInstance.Config.Rooms[i].Price);
                                 await Delay(5000);
@@ -258,7 +256,7 @@ namespace VORP.Housing.Client
                             if (!isInRoom)
                             {
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToEnter);
-                                if (API.IsControlJustPressed(2, 0xC7B5340A))
+                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
                                     isInRoom = true;
                                     float tpEnterX = (float)_configurationInstance.Config.Rooms[i].TPEnter[0];
@@ -276,7 +274,7 @@ namespace VORP.Housing.Client
                             else
                             {
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToLeave);
-                                if (API.IsControlJustPressed(2, 0xC7B5340A))
+                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
                                     isInRoom = false;
                                     float tpLeaveX = (float)_configurationInstance.Config.Rooms[i].TPLeave[0];
@@ -326,7 +324,7 @@ namespace VORP.Housing.Client
                             if (Houses[houseId].IsOpen)
                             {
                                 //await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), "Puerta Abierta");
-                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16);
+                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
                                 bool hit = false;
                                 Vector3 endCoords = new Vector3();
                                 Vector3 surfaceNormal = new Vector3();
@@ -339,7 +337,7 @@ namespace VORP.Housing.Client
                             else
                             {
                                 //await Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), "Puerta Cerrada");
-                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16);
+                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
                                 bool hit = false;
                                 Vector3 endCoords = new Vector3();
                                 Vector3 surfaceNormal = new Vector3();
@@ -353,7 +351,7 @@ namespace VORP.Housing.Client
                         }
                         else
                         {
-                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16);
+                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
                             bool hit = false;
                             Vector3 endCoords = new Vector3();
                             Vector3 surfaceNormal = new Vector3();
@@ -380,15 +378,15 @@ namespace VORP.Housing.Client
 
                     if (distance < 12.0f)
                     {
-                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16);
-                            bool hit = false;
-                            Vector3 endCoords = new Vector3();
-                            Vector3 surfaceNormal = new Vector3();
-                            int entity = 0;
-                            int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                            API.SetEntityHeading(entity, doorH);
-                            API.FreezeEntityPosition(entity, true);
-                            API.DoorSystemSetDoorState(entity, 1);
+                        int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
+                        bool hit = false;
+                        Vector3 endCoords = new Vector3();
+                        Vector3 surfaceNormal = new Vector3();
+                        int entity = 0;
+                        int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
+                        API.SetEntityHeading(entity, doorH);
+                        API.FreezeEntityPosition(entity, true);
+                        API.DoorSystemSetDoorState(entity, 1);
                     }
                 }
             }
