@@ -107,7 +107,6 @@ namespace VORP.Housing.Client
             }
         }
 
-        #region Unused Methods
         [Tick]
         private async Task UseInteriorCompsTick()
         {
@@ -394,8 +393,6 @@ namespace VORP.Housing.Client
                 }
             }
         }
-        #endregion
-
         #endregion
     }
 }
