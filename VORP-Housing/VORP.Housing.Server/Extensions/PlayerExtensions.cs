@@ -16,8 +16,12 @@ namespace VORP.Housing.Server.Extensions
             dynamic coreUser = await player.GetCoreUserAsync();
             if (coreUser == null)
             {
-                Logger.Warn($"GetCoreUser: Player '{player.Handle}' does not exist.");
+                Logger.Warn($"Server.PlayerExtensions.GetCoreUserCharacterAsync(): " +
+                    $"Player \"{player.Handle}\" does not exist.");
+
+                return null;
             }
+
             return coreUser.getUsedCharacter;
         }
 
@@ -27,13 +31,27 @@ namespace VORP.Housing.Server.Extensions
 
             if (character == null)
             {
-                if (!PluginManager.ActiveCharacters.ContainsKey(player.Handle)) return -1;
+                if (!PluginManager.ActiveCharacters.ContainsKey(player.Handle))
+                {
+                    Logger.Warn("Server.PlayerExtensions.GetCoreUserCharacterIdAsync(): " +
+                        $"The active player \"{player.Handle}\" was not found via \"GetCoreUserCharacterAsync()\"");
+
+                    return -1;
+                }
+
                 return PluginManager.ActiveCharacters[player.Handle];
             }
 
             if (!Common.HasProperty(character, "charIdentifier"))
             {
-                if (!PluginManager.ActiveCharacters.ContainsKey(player.Handle)) return -1;
+                if (!PluginManager.ActiveCharacters.ContainsKey(player.Handle))
+                {
+                    Logger.Warn("Server.PlayerExtensions.GetCoreUserCharacterIdAsync(): " +
+                        $"The active player \"{player.Handle}\" was not found via \"charIdentifier\" property");
+
+                    return -1;
+                }
+
                 return PluginManager.ActiveCharacters[player.Handle];
             }
 

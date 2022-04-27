@@ -1,28 +1,29 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using VORP.Housing.Server.Extensions;
+using VORP.Housing.Server.Scripts;
 using VORP.Housing.Shared;
 
 namespace VORP.Housing.Server
 {
-    public class HouseInventory : BaseScript
+    public class HouseInventory : Manager
     {
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
 
-        public HouseInventory()
+        public void Initialize()
         {
-            EventHandlers["vorp_housing:TakeFromHouse"] += new Action<Player, string>(TakeFromHouse);
-            EventHandlers["vorp_housing:MoveToHouse"] += new Action<Player, string>(MoveToHouse);
-            EventHandlers["vorp_housing:UpdateInventoryHouse"] += new Action<Player, int>(UpdateInventoryHouse);
+            AddEvent("vorp_housing:TakeFromHouse", new Action<Player, string>(TakeFromHouse));
+            AddEvent("vorp_housing:MoveToHouse", new Action<Player, string>(MoveToHouse));
+            AddEvent("vorp_housing:UpdateInventoryHouse", new Action<Player, int>(UpdateInventoryHouse));
         }
 
         #region Private Methods
-        private void TakeFromHouse([FromSource] Player player, string jsonData)
+        private async void TakeFromHouse([FromSource] Player player, string jsonData)
         {
             string sid = "steam:" + player.Identifiers["steam"];
             int source = int.Parse(player.Handle);
-            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
-            int charIdentifier = userCharacter.charIdentifier;
+            int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
             JObject data = JObject.Parse(jsonData);
 
@@ -57,11 +58,11 @@ namespace VORP.Housing.Server
 
                 if (Init.Rooms.ContainsKey(houseId))
                 {
-                    Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                    Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {
                         if (result.Count == 0)
                         {
-                            Debug.WriteLine($"Error House not Exist or not Buyed");
+                            Logger.Debug($"Error House not Exist or not Buyed");
                         }
                         else
                         {
@@ -99,7 +100,7 @@ namespace VORP.Housing.Server
                                         }
 
                                         TriggerEvent("vorpCore:giveWeapon", source, weaponId, 0);
-                                        Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                        Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                         JObject items = new JObject
                                         {
@@ -112,12 +113,12 @@ namespace VORP.Housing.Server
                                 }
                                 else
                                 {
-                                    Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                    Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                 }
                             }
                             else
                             {
-                                Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                             }
                         }
 
@@ -125,12 +126,11 @@ namespace VORP.Housing.Server
                 }
                 else
                 {
-
-                    Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                    Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {
                         if (result.Count == 0)
                         {
-                            Debug.WriteLine($"Error House not Exist or not Buyed");
+                            Logger.Debug($"Error House not Exist or not Buyed");
                         }
                         else
                         {
@@ -155,7 +155,6 @@ namespace VORP.Housing.Server
 
                                     TriggerEvent("vorpCore:canCarryWeapons", int.Parse(player.Handle), number, new Action<dynamic>((allowed) =>
                                     {
-
                                         if (!allowed)
                                         {
                                             player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ErrorQuantity, 2500);
@@ -167,7 +166,7 @@ namespace VORP.Housing.Server
                                         }
 
                                         TriggerEvent("vorpCore:giveWeapon", source, weaponId, 0);
-                                        Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                        Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                         JObject items = new JObject
                                         {
@@ -180,12 +179,12 @@ namespace VORP.Housing.Server
                                 }
                                 else
                                 {
-                                    Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                    Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                 }
                             }
                             else
                             {
-                                Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                             }
                         }
 
@@ -206,11 +205,11 @@ namespace VORP.Housing.Server
 
                     if (Init.Rooms.ContainsKey(houseId))
                     {
-                        Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                        Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                         {
                             if (result.Count == 0)
                             {
-                                Debug.WriteLine($"Error House not Exist or not Buyed");
+                                Logger.Debug($"Error House not Exist or not Buyed");
                             }
                             else
                             {
@@ -252,7 +251,7 @@ namespace VORP.Housing.Server
                                             }
 
                                             TriggerEvent("vorpCore:addItem", int.Parse(player.Handle), name, number);
-                                            Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                            Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                             JObject items = new JObject
                                             {
@@ -265,12 +264,12 @@ namespace VORP.Housing.Server
                                     }
                                     else
                                     {
-                                        Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                        Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                     }
                                 }
                                 else
                                 {
-                                    Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                    Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                 }
                             }
 
@@ -279,11 +278,11 @@ namespace VORP.Housing.Server
                     else
                     {
 
-                        Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                        Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                         {
                             if (result.Count == 0)
                             {
-                                Debug.WriteLine($"Error House not Exist or not Buyed");
+                                Logger.Debug($"Error House not Exist or not Buyed");
                             }
                             else
                             {
@@ -325,7 +324,7 @@ namespace VORP.Housing.Server
                                             }
 
                                             TriggerEvent("vorpCore:addItem", int.Parse(player.Handle), name, number);
-                                            Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                            Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                             JObject items = new JObject
                                             {
@@ -338,12 +337,12 @@ namespace VORP.Housing.Server
                                     }
                                     else
                                     {
-                                        Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                        Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                     }
                                 }
                                 else
                                 {
-                                    Debug.WriteLine(player.Name + "Attempt to dupe in House inventory");
+                                    Logger.Debug(player.Name + "Attempt to dupe in House inventory");
                                 }
                             }
                         }));
@@ -352,13 +351,12 @@ namespace VORP.Housing.Server
             }
         }
 
-        private void MoveToHouse([FromSource] Player player, string jsonData)
+        private async void MoveToHouse([FromSource] Player player, string jsonData)
         {
 
             string sid = "steam:" + player.Identifiers["steam"];
             int source = int.Parse(player.Handle);
-            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
-            int charIdentifier = userCharacter.charIdentifier;
+            int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
             JObject data = JObject.Parse(jsonData);
 
@@ -400,11 +398,11 @@ namespace VORP.Housing.Server
 
             if (Init.Rooms.ContainsKey(houseId))
             {
-                Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count == 0)
                     {
-                        Debug.WriteLine($"Error House not Exist or not Buyed");
+                        Logger.Debug($"Error House not Exist or not Buyed");
                     }
                     else
                     {
@@ -440,7 +438,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subWeapon", source, weaponId);
-                                Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -461,8 +459,8 @@ namespace VORP.Housing.Server
                                     houseData[indexItem]["count"] = houseData[indexItem]["count"].ToObject<int>() + number;
 
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                    Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
-                                    Debug.WriteLine(houseData.ToString().Replace(Environment.NewLine, " "));
+                                    Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                    Logger.Debug(houseData.ToString().Replace(Environment.NewLine, " "));
                                     JObject items = new JObject
                                     {
                                         { "itemList", houseData },
@@ -477,7 +475,7 @@ namespace VORP.Housing.Server
                                     houseData.Add(data["item"]);
                                     
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                    Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                    Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                     JObject items = new JObject
                                     {
@@ -501,7 +499,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subWeapon", source, weapId);
-                                Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -517,7 +515,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                Exports["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE rooms SET inventory=? WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -533,11 +531,11 @@ namespace VORP.Housing.Server
             }
             else // Houses
             {
-                Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count == 0)
                     {
-                        Debug.WriteLine($"Error House not Exist or not Buyed");
+                        Logger.Debug($"Error House not Exist or not Buyed");
                     }
                     else
                     {
@@ -573,7 +571,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subWeapon", source, weaponId);
-                                Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -594,7 +592,7 @@ namespace VORP.Housing.Server
                                     houseData[indexItem]["count"] = houseData[indexItem]["count"].ToObject<int>() + number;
 
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                    Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                    Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
                                     JObject items = new JObject
                                     {
                                         { "itemList", houseData },
@@ -609,7 +607,7 @@ namespace VORP.Housing.Server
                                     houseData.Add(data["item"]);
 
                                     TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                    Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                    Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                     JObject items = new JObject
                                     {
@@ -632,7 +630,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subWeapon", source, weaponId);
-                                Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -648,7 +646,7 @@ namespace VORP.Housing.Server
                                 houseData.Add(data["item"]);
 
                                 TriggerEvent("vorpCore:subItem", int.Parse(player.Handle), name, number);
-                                Exports["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
+                                Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
 
                                 JObject items = new JObject
                                 {
@@ -664,17 +662,16 @@ namespace VORP.Housing.Server
             }
         }
 
-        private void UpdateInventoryHouse([FromSource] Player player, int houseId)
+        private async void UpdateInventoryHouse([FromSource] Player player, int houseId)
         {
             string sid = "steam:" + player.Identifiers["steam"];
 
             int source = int.Parse(player.Handle);
-            dynamic userCharacter = Init.VORPCORE.getUser(source).getUsedCharacter;
-            int charIdentifier = userCharacter.charIdentifier;
+            int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
             if (Init.Rooms.ContainsKey(houseId))
             {
-                Exports["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count != 0)
                     {
@@ -702,7 +699,7 @@ namespace VORP.Housing.Server
             }
             else
             {
-                Exports["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                 {
                     if (result.Count != 0)
                     {

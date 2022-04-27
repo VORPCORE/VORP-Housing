@@ -15,8 +15,7 @@ namespace VORP.Housing.Server
         private readonly string _GHMattiMySqlResourceState = GetResourceState("ghmattimysql");
 
         public static PluginManager Instance { get; private set; }
-        public PlayerList PlayerList { get; private set; }
-
+        public PlayerList PlayerList => Players;
         public ExportDictionary ExportRegistry => Exports;
 
         // Database
@@ -24,19 +23,19 @@ namespace VORP.Housing.Server
 
         // private scripts
         public static Init Init = new();
+        public static HouseInventory HouseInventory = new();
 
         public static Dictionary<string, int> ActiveCharacters = new();
 
         public PluginManager()
         {
-            Logger.Info($"Init VORP Housing");
+            Logger.Info($"Init VORP Housing server");
 
             Instance = this;
-            PlayerList = Players;
 
             Setup();
 
-            Logger.Info($"VORP Housing Loaded");
+            Logger.Info($"VORP Housing server loaded");
         }
 
         // This needs to become an Export on Core, as an EVENT its just adding more onto the event queue.
@@ -84,14 +83,17 @@ namespace VORP.Housing.Server
 
                 _configurationInstance.LoadConfig();
 
+                // control the start up order of each script
                 //ItemsDB.Init();
                 Init.Initialize();
+                Init.LoadAll();
+                HouseInventory.Initialize();
 
                 AddEvents();
             }
             catch (Exception ex)
             {
-                Logger.CriticalError(ex, $"Shared.PluginManager.Setup()");
+                Logger.CriticalError(ex, $"Server.PluginManager.Setup()");
             }
         }
 
@@ -109,9 +111,6 @@ namespace VORP.Housing.Server
                 {
                     string steamIdent = $"steam:{player.Identifiers["steam"]}";
 
-                    //if (Database.ItemDatabase.UserInventory.ContainsKey(steamIdent))
-                    //    Database.ItemDatabase.UserInventory.Remove(steamIdent);
-
                     if (ActiveCharacters.ContainsKey(player.Handle))
                         ActiveCharacters.Remove(player.Handle);
                 }
@@ -123,16 +122,18 @@ namespace VORP.Housing.Server
 
             Hook("onResourceStart", new Action<string>(resourceName =>
             {
-                if (resourceName != GetCurrentResourceName()) return;
+                if (resourceName != GetCurrentResourceName()) 
+                    return;
 
-                Logger.Info($"VORP Housing Started");
+                Logger.Info($"VORP Housing resource started");
             }));
 
             Hook("onResourceStop", new Action<string>(resourceName =>
             {
-                if (resourceName != GetCurrentResourceName()) return;
+                if (resourceName != GetCurrentResourceName())
+                    return;
 
-                Logger.Info($"Stopping VORP Housing");
+                Logger.Info($"Stopping VORP Housing resource");
             }));
         }
     }

@@ -13,42 +13,41 @@ namespace VORP.Housing.Client
     public class Init : Manager
     {
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
+        private bool _isInRoom = false;
+
         public static Dictionary<int, House> Houses = new Dictionary<int, House>();
         public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
 
-        public static bool isInInterior = false;
-        public static bool isInRoom = false;
-
         public void Initialize()
         {
-            EventHandlers["vorp_housing:UpdateHousesStatus"] += new Action<int, string>(UpdateHouse);
-            EventHandlers["vorp_housing:UpdateRoomsStatus"] += new Action<int, string>(UpdateRoom);
-            EventHandlers["vorp_housing:SetHouseOwner"] += new Action<int>(SetHouseOwner);
-            EventHandlers["vorp_housing:SetDoorState"] += new Action<int, bool>(SetDoorState);
-            EventHandlers["vorp_housing:ListHouses"] += new Action<string>(ListHouses);
-            EventHandlers["vorp_housing:ListRooms"] += new Action<string>(ListRooms);
-            EventHandlers["vorp:SelectedCharacter"] += new Action<int>((charId) =>
+            AddEvent("vorp_housing:UpdateHousesStatus", new Action<int, string>(UpdateHouse));
+            AddEvent("vorp_housing:UpdateRoomsStatus", new Action<int, string>(UpdateRoom));
+            AddEvent("vorp_housing:SetHouseOwner", new Action<int>(SetHouseOwner));
+            AddEvent("vorp_housing:SetDoorState", new Action<int, bool>(SetDoorState));
+            AddEvent("vorp_housing:ListHouses", new Action<string>(ListHouses));
+            AddEvent("vorp_housing:ListRooms", new Action<string>(ListRooms));
+            AddEvent("vorp:SelectedCharacter", new Action<int>((charId) =>
             {
                 TriggerServerEvent("vorp_housing:getHouses", charId);
                 TriggerServerEvent("vorp_housing:getRooms", charId);
-            });
+            }));
 
-            Tick += UseInteriorCompsTick;
-            Tick += ChangeStatusTick;
-            Tick += DoorLockedsTick;
+            AttachTickHandler(UseInteriorCompsTickAsync);
+            AttachTickHandler(ChangeStatusTickAsync);
+            AttachTickHandler(DoorLockedsTickAsync);
         }
 
         #region Private Methods
         private void ListHouses(string json)
         {
-            Logger.Trace($"ListHouses():\r\n{json}");
+            Logger.Trace($"Client.Init.ListHouses():\r\n{json}");
             Houses = JsonConvert.DeserializeObject<Dictionary<int, House>>(json);
             SetBlips();
         }
 
         private void ListRooms(string json)
         {
-            Logger.Trace($"ListRooms():\r\n{json}");
+            Logger.Trace($"Client.Init.ListRooms():\r\n{json}");
             Rooms = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
             //SetBlips();
             foreach (var r in Rooms)
@@ -84,9 +83,9 @@ namespace VORP.Housing.Client
                 //249721687
                 foreach (HouseJson house in _configurationInstance.Config.Houses)
                 {
-                    int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]); // Blip MAP::BLIP_ADD_FOR_COORDS
                     if (Houses.ContainsKey((int)house.Id))
                     {
+                        int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]); // Blip MAP::BLIP_ADD_FOR_COORDS
                         if (string.IsNullOrEmpty(Houses[(int)house.Id].Identifier))
                         {
                             Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1); // void MAP::SET_BLIP_SPRITE
@@ -103,12 +102,12 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error($"Server.Init.SetBlips(): {ex.Message}");
+                Logger.Error(ex, $"Server.Init.SetBlips()");
             }
         }
 
         [Tick]
-        private async Task UseInteriorCompsTick()
+        private async Task UseInteriorCompsTickAsync()
         {
             if (_configurationInstance.Config == null)
             {
@@ -167,7 +166,7 @@ namespace VORP.Housing.Client
         }
 
         [Tick]
-        private async Task ChangeStatusTick()
+        private async Task ChangeStatusTickAsync()
         {
             if (_configurationInstance.Config == null)
             {
@@ -225,7 +224,6 @@ namespace VORP.Housing.Client
                         }
                     }
                 }
-
             }
 
             for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
@@ -253,12 +251,12 @@ namespace VORP.Housing.Client
                         }
                         else
                         {
-                            if (!isInRoom)
+                            if (!_isInRoom)
                             {
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToEnter);
                                 if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
-                                    isInRoom = true;
+                                    _isInRoom = true;
                                     float tpEnterX = (float)_configurationInstance.Config.Rooms[i].TPEnter[0];
                                     float tpEnterY = (float)_configurationInstance.Config.Rooms[i].TPEnter[1];
                                     float tpEnterZ = (float)_configurationInstance.Config.Rooms[i].TPEnter[2];
@@ -276,7 +274,7 @@ namespace VORP.Housing.Client
                                 Functions.DrawTxt3D(new Vector3(doorStatusX, doorStatusY, doorStatusZ), _configurationInstance.Language.PressToLeave);
                                 if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
-                                    isInRoom = false;
+                                    _isInRoom = false;
                                     float tpLeaveX = (float)_configurationInstance.Config.Rooms[i].TPLeave[0];
                                     float tpLeaveY = (float)_configurationInstance.Config.Rooms[i].TPLeave[1];
                                     float tpLeaveZ = (float)_configurationInstance.Config.Rooms[i].TPLeave[2];
@@ -292,13 +290,11 @@ namespace VORP.Housing.Client
                         }
                     }
                 }
-
             }
-
         }
 
         [Tick]
-        private async Task DoorLockedsTick()
+        private async Task DoorLockedsTickAsync()
         {
             if (_configurationInstance.Config == null)
             {

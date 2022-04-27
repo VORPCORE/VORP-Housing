@@ -18,7 +18,7 @@ namespace VORP.Housing.Client
         {
             try
             {
-                Logger.Info("VORP Housing INIT");
+                Logger.Info("Init VORP Housing client");
 
                 Instance = this;
 
@@ -27,11 +27,11 @@ namespace VORP.Housing.Client
                 // control the start up order of each script
                 Init.Initialize();
 
-                Logger.Info("VORP Housing Loaded");
+                Logger.Info("VORP Housing client loaded");
             }
             catch (Exception ex)
             {
-                Logger.CriticalError(ex, $"Shared.PluginManager.PluginManager()");
+                Logger.CriticalError(ex, $"Client.PluginManager.PluginManager()");
             }
         }
     }
