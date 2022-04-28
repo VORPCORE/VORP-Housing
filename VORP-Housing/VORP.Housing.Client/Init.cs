@@ -38,6 +38,8 @@ namespace VORP.Housing.Client
         }
 
         #region Private Methods
+
+        #region Event Methods
         private void ListHouses(string json)
         {
             Houses = JsonConvert.DeserializeObject<Dictionary<uint, House>>(json);
@@ -68,37 +70,9 @@ namespace VORP.Housing.Client
         {
             Houses[houseId].IsOwner = true;
         }
+        #endregion
 
-        private void SetBlips()
-        {
-            try
-            {
-                //249721687
-                foreach (HouseJson house in _configurationInstance.Config.Houses)
-                {
-                    if (Houses.ContainsKey(house.Id))
-                    {
-                        int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]); // Blip MAP::BLIP_ADD_FOR_COORDS
-                        if (string.IsNullOrEmpty(Houses[house.Id].Identifier))
-                        {
-                            Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1); // void MAP::SET_BLIP_SPRITE
-                        }
-                        else
-                        {
-                            Function.Call((Hash)0x74F74D3207ED525C, blip, -2024635066, 1); // void MAP::SET_BLIP_SPRITE
-                        }
-
-                        Function.Call((Hash)0x9CB1A1623062F402, blip, house.Name); // void MAP::_SET_BLIP_NAME_FROM_PLAYER_STRING
-                        Function.Call((Hash)0x174D0AAB11CED739, (int)house.Id, house.InteriorName); // void INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, $"Server.Init.SetBlips()");
-            }
-        }
-
+        #region Tick Methods
         [Tick]
         private async Task UseInteriorCompsTickAsync()
         {
@@ -368,6 +342,40 @@ namespace VORP.Housing.Client
                 }
             }
         }
+        #endregion
+
+        #region Class Methods
+        private void SetBlips()
+        {
+            try
+            {
+                //249721687
+                foreach (HouseJson house in _configurationInstance.Config.Houses)
+                {
+                    if (Houses.ContainsKey(house.Id))
+                    {
+                        int blip = Function.Call<int>((Hash)0x554D9D53F696D002, 1664425300, house.DoorsStatus[0], house.DoorsStatus[1], house.DoorsStatus[2]); // Blip MAP::BLIP_ADD_FOR_COORDS
+                        if (string.IsNullOrEmpty(Houses[house.Id].Identifier))
+                        {
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, 249721687, 1); // void MAP::SET_BLIP_SPRITE
+                        }
+                        else
+                        {
+                            Function.Call((Hash)0x74F74D3207ED525C, blip, -2024635066, 1); // void MAP::SET_BLIP_SPRITE
+                        }
+
+                        Function.Call((Hash)0x9CB1A1623062F402, blip, house.Name); // void MAP::_SET_BLIP_NAME_FROM_PLAYER_STRING
+                        Function.Call((Hash)0x174D0AAB11CED739, (int)house.Id, house.InteriorName); // void INTERIOR::ACTIVATE_INTERIOR_ENTITY_SET
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.SetBlips()");
+            }
+        }
+        #endregion
+
         #endregion
     }
 }
