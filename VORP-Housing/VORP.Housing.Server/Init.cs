@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using VORP.Housing.Server.Extensions;
 using VORP.Housing.Server.Scripts;
 using VORP.Housing.Shared;
@@ -59,6 +58,8 @@ namespace VORP.Housing.Server
         #endregion
 
         #region Private Methods
+
+        #region Event Methods
         private async void GetRoomsAsync(int source)
         {
             try
@@ -67,17 +68,20 @@ namespace VORP.Housing.Server
                 if (player == null)
                 {
                     Logger.Error($"Server.Init.GetRoomsAsync(): Player \"{source}\" does not exist.");
+                    TriggerClientListRooms(); // return default list
                     return;
                 }
 
                 dynamic tableExist = await Export["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'rooms' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
                 {
-                    Logger.Error("Server.Init.GetRoomsAsync(): SQL table \"rooms\" doesn't exist");
+                    Logger.Error("Server.Init.GetRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
+                        "Users will not be able to buy rooms unless this table exists");
+
+                    TriggerClientListRooms(); // return default list
                     return;
                 }
 
-                Dictionary<int, Room> rooms = Rooms.ToDictionary(h => h.Key, h => h.Value);
                 string sid = "steam:" + player.Identifiers["steam"];
 
                 int charIdentifier = await player.GetCoreUserCharacterIdAsync();
@@ -85,28 +89,28 @@ namespace VORP.Housing.Server
                 {
                     Logger.Warn("Server.Init.GetRoomsAsync(): Player charIdentifier returned -1. " +
                         "Skipping charIdentifier-based SQL lookup for rooms...");
+
+                    TriggerClientListRooms(); // return default list
+                    return;
                 }
-                else
+
+                dynamic result = await Export["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+
+                if (result != null && result.Count > 0)
                 {
-                    dynamic result = await Export["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+                    Logger.Debug(JsonConvert.SerializeObject(result));
 
-                    if (result != null && result.Count > 0)
+                    foreach (var r in result)
                     {
-                        Logger.Debug(JsonConvert.SerializeObject(result));
-
-                        foreach (var r in result)
-                        {
-                            int roomId = r.interiorId;
-                            string identifier = r.identifier;
-                            int charidentifier = r.charidentifier;
-                            rooms[roomId].Identifier = identifier;
-                            rooms[roomId].CharIdentifier = charidentifier;
-                        }
+                        int roomId = r.interiorId;
+                        string identifier = r.identifier;
+                        int charidentifier = r.charidentifier;
+                        Rooms[roomId].Identifier = identifier;
+                        Rooms[roomId].CharIdentifier = charidentifier;
                     }
                 }
 
-                string roomsString = JsonConvert.SerializeObject(rooms);
-                TriggerClientEvent("vorp_housing:ListRooms", roomsString);
+                TriggerClientListRooms();
             }
             catch (Exception ex)
             {
@@ -122,20 +126,22 @@ namespace VORP.Housing.Server
                 if (player == null)
                 {
                     Logger.Error($"Server.Init.GetHousesAsync(): Player \"{source}\" does not exist.");
+                    TriggerClientListHouses(); // return default list
                     return;
                 }
 
                 string sid = "steam:" + player.Identifiers["steam"];
 
-                Dictionary<uint, House> houses = Houses.ToDictionary(h => h.Key, h => h.Value);
-
                 dynamic tableExist = await Export["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'housing' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
                 {
-                    Logger.Error("Server.Init.GetHousesAsync(): SQL table \"housing\" doesn't exist");
+                    Logger.Error("Server.Init.GetHousesAsync(): SQL table \"housing\" doesn't exist. " +
+                        "Users will not be able to buy houses unless this table exists");
+
+                    TriggerClientListHouses(); // return default list
                     return;
                 }
-
+                
                 dynamic result = await Export["ghmattimysql"].executeSync("SELECT * FROM housing", new string[] { });
 
                 if (result != null && result.Count > 0)
@@ -147,26 +153,27 @@ namespace VORP.Housing.Server
                         uint houseId = ConvertValue(r.id.ToString());
                         string identifier = r.identifier;
                         int charidentifier = r.charidentifier;
+
                         string furniture = "{}";
                         if (!string.IsNullOrEmpty(r.furniture))
                         {
                             furniture = r.furniture;
                         }
 
-                        houses[houseId].Identifier = identifier;
-                        houses[houseId].CharIdentifier = charidentifier;
-                        houses[houseId].Furniture = furniture;
-                        houses[houseId].IsOpen = Convert.ToBoolean(r.open);
+                        Houses[houseId].Identifier = identifier;
+                        Houses[houseId].CharIdentifier = charidentifier;
+                        Houses[houseId].Furniture = furniture;
+                        Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
 
-                        if (identifier.Equals(sid))
+                        // Ensure the character owns the house and not just the player
+                        if (source == charidentifier)
                         {
-                            houses[houseId].IsOwner = true;
+                            Houses[houseId].IsOwner = true;
                         }
                     }
                 }
 
-                string housesString = JsonConvert.SerializeObject(houses);
-                TriggerClientEvent("vorp_housing:ListHouses", housesString);
+                TriggerClientListHouses();
             }
             catch (Exception ex)
             {
@@ -176,7 +183,11 @@ namespace VORP.Housing.Server
 
         private void ChangeDoorState(uint houseId, bool state)
         {
-            Houses[houseId].SetOpen(state);
+            Houses[houseId].IsOpen = state;
+
+            int openState = state ? 1 : 0;
+            Export["ghmattimysql"].execute($"UPDATE housing SET open=? WHERE id=?", new object[] { openState, houseId });
+            
             TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
         }
 
@@ -186,11 +197,16 @@ namespace VORP.Housing.Server
             int source = int.Parse(player.Handle);
             dynamic userCharacter = await player.GetCoreUserCharacterAsync();
             int charIdentifier = userCharacter.charIdentifier;
+
             double money = userCharacter.money;
             if (money >= price)
             {
                 TriggerEvent("vorp:removeMoney", source, 0, price);
-                Houses[houseId].BuyHouse(sid, charIdentifier);
+
+                Houses[houseId].Identifier = sid;
+                Houses[houseId].CharIdentifier = charIdentifier;
+                
+                Export["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { houseId, sid, charIdentifier, "{}" });
                 TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
                 player.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
                 player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
@@ -207,6 +223,7 @@ namespace VORP.Housing.Server
             int source = int.Parse(player.Handle);
             dynamic userCharacter = await player.GetCoreUserCharacterAsync();
             int charIdentifier = userCharacter.charIdentifier;
+
             double money = userCharacter.money;
             if (money >= price)
             {
@@ -220,6 +237,20 @@ namespace VORP.Housing.Server
             {
                 player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
             }
+        }
+        #endregion
+
+        #region Class Methods
+        private void TriggerClientListRooms()
+        {
+            string roomsString = JsonConvert.SerializeObject(Rooms);
+            TriggerClientEvent("vorp_housing:ListRooms", roomsString);
+        }
+
+        private void TriggerClientListHouses()
+        {
+            string housesString = JsonConvert.SerializeObject(Houses);
+            TriggerClientEvent("vorp_housing:ListHouses", housesString);
         }
 
         private static uint ConvertValue(string s)
@@ -235,6 +266,8 @@ namespace VORP.Housing.Server
                 return result;
             }
         }
+        #endregion
+
         #endregion
     }
 }
