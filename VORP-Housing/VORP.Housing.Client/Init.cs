@@ -170,25 +170,11 @@ namespace VORP.Housing.Client
                         {
                             if (house.IsOpen)
                             {
-                                Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToClose);
-
-                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
-                                {
-                                    house.IsOpen = false;
-                                    TriggerServerEvent("vorp_housing:changeDoorState", houseId, false);
-                                    await Delay(3000);
-                                }
+                                ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToClose, false);
                             }
                             else
                             {
-                                Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToOpen);
-
-                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
-                                {
-                                    house.IsOpen = true;
-                                    TriggerServerEvent("vorp_housing:changeDoorState", houseId, true);
-                                    await Delay(3000);
-                                }
+                                ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToOpen, true);
                             }
                         }
                     }
@@ -372,6 +358,25 @@ namespace VORP.Housing.Client
             catch (Exception ex)
             {
                 Logger.Error(ex, $"Server.Init.SetBlips()");
+            }
+        }
+
+        /// <summary>
+        /// Change the state of a house's door and display a prompt
+        /// </summary>
+        /// <param name="doorCoords">Coordinates of the house's door</param>
+        /// <param name="house">The house that owns the door</param>
+        /// <param name="languagePrompt">Prompt to either close or open a door</param>
+        /// <param name="state">Assign the state of the door (open = true/close = false)</param>
+        private async void ChangeDoorState(Vector3 doorCoords, House house, string languagePrompt, bool state)
+        {
+            Functions.DrawTxt3D(doorCoords, languagePrompt);
+
+            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+            {
+                house.IsOpen = state;
+                TriggerServerEvent("vorp_housing:changeDoorState", house.Id, state);
+                await Delay(3000);
             }
         }
         #endregion
