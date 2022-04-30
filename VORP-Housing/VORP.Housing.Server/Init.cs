@@ -28,31 +28,38 @@ namespace VORP.Housing.Server
         #region Public Method
         public void LoadAll()
         {
-            foreach (HouseJson house in _configurationInstance.Config.Houses)
+            try
             {
-                Houses.Add(house.Id, new House
+                foreach (HouseJson house in _configurationInstance.Config.Houses)
                 {
-                    Id = house.Id,
-                    Interior = house.InteriorName, 
-                    Identifier = null, 
-                    CharIdentifier = -1, 
-                    Price = house.Price, 
-                    Furniture = null, 
-                    IsOpen = false, 
-                    MaxWeight = house.MaxWeight
-                });
-            }
+                    Houses.Add(house.Id, new House
+                    {
+                        Id = house.Id,
+                        Interior = house.InteriorName,
+                        Identifier = null,
+                        CharIdentifier = -1,
+                        Price = house.Price,
+                        Furniture = null,
+                        IsOpen = false,
+                        MaxWeight = house.MaxWeight
+                    });
+                }
 
-            foreach (RoomJson room in _configurationInstance.Config.Rooms)
-            {
-                Rooms.Add(room.Id, new Room
+                foreach (RoomJson room in _configurationInstance.Config.Rooms)
                 {
-                    Id = room.Id, 
-                    Identifier = null, 
-                    CharIdentifier = -1, 
-                    Price = room.Price, 
-                    MaxWeight = room.MaxWeight
-                });
+                    Rooms.Add(room.Id, new Room
+                    {
+                        Id = room.Id,
+                        Identifier = null,
+                        CharIdentifier = -1,
+                        Price = room.Price,
+                        MaxWeight = room.MaxWeight
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.LoadAll()");
             }
         }
         #endregion
@@ -183,59 +190,80 @@ namespace VORP.Housing.Server
 
         private void ChangeDoorState(uint houseId, bool state)
         {
-            Houses[houseId].IsOpen = state;
+            try
+            {
+                Houses[houseId].IsOpen = state;
 
-            int openState = state ? 1 : 0;
-            Export["ghmattimysql"].execute($"UPDATE housing SET open=? WHERE id=?", new object[] { openState, houseId });
-            
-            TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
+                int openState = state ? 1 : 0;
+                Export["ghmattimysql"].execute($"UPDATE housing SET open=? WHERE id=?", new object[] { openState, houseId });
+
+                TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.ChangeDoorState()");
+            }
         }
 
         private async void BuyHouseAsync([FromSource]Player player, uint houseId, double price)
         {
-            string sid = "steam:" + player.Identifiers["steam"];
-            int source = int.Parse(player.Handle);
-            dynamic userCharacter = await player.GetCoreUserCharacterAsync();
-            int charIdentifier = userCharacter.charIdentifier;
-
-            double money = userCharacter.money;
-            if (money >= price)
+            try
             {
-                TriggerEvent("vorp:removeMoney", source, 0, price);
+                string sid = "steam:" + player.Identifiers["steam"];
+                int source = int.Parse(player.Handle);
+                dynamic userCharacter = await player.GetCoreUserCharacterAsync();
+                int charIdentifier = userCharacter.charIdentifier;
 
-                Houses[houseId].Identifier = sid;
-                Houses[houseId].CharIdentifier = charIdentifier;
-                
-                Export["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { houseId, sid, charIdentifier, "{}" });
-                TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
-                player.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
-                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                double money = userCharacter.money;
+                if (money >= price)
+                {
+                    TriggerEvent("vorp:removeMoney", source, 0, price);
+
+                    Houses[houseId].Identifier = sid;
+                    Houses[houseId].CharIdentifier = charIdentifier;
+
+                    Export["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { houseId, sid, charIdentifier, "{}" });
+                    TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
+                    player.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
+                    player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                }
+                else
+                {
+                    player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                Logger.Error(ex, $"Server.Init.BuyHouseAsync()");
             }
         }
 
         private async void BuyRoomAsync([FromSource] Player player, int roomId, double price)
         {
-            string sid = "steam:" + player.Identifiers["steam"];
-            int source = int.Parse(player.Handle);
-            dynamic userCharacter = await player.GetCoreUserCharacterAsync();
-            int charIdentifier = userCharacter.charIdentifier;
+            try
+            {
+                string sid = "steam:" + player.Identifiers["steam"];
+                int source = int.Parse(player.Handle);
+                dynamic userCharacter = await player.GetCoreUserCharacterAsync();
+                int charIdentifier = userCharacter.charIdentifier;
 
-            double money = userCharacter.money;
-            if (money >= price)
-            {
-                TriggerEvent("vorp:removeMoney", source, 0, price);
-                Export["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
-                player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
-                //player.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
-                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                double money = userCharacter.money;
+                if (money >= price)
+                {
+                    TriggerEvent("vorp:removeMoney", source, 0, price);
+                    Export["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
+                    player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
+                    //player.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
+                    player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
+                }
+                else
+                {
+                    player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.NoMoney, 4000);
+                Logger.Error(ex, $"Server.Init.BuyRoomAsync()");
             }
         }
         #endregion
@@ -243,14 +271,28 @@ namespace VORP.Housing.Server
         #region Class Methods
         private void TriggerClientListRooms()
         {
-            string roomsString = JsonConvert.SerializeObject(Rooms);
-            TriggerClientEvent("vorp_housing:ListRooms", roomsString);
+            try
+            {
+                string roomsString = JsonConvert.SerializeObject(Rooms);
+                TriggerClientEvent("vorp_housing:ListRooms", roomsString);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.TriggerClientListRooms()");
+            }
         }
 
         private void TriggerClientListHouses()
         {
-            string housesString = JsonConvert.SerializeObject(Houses);
-            TriggerClientEvent("vorp_housing:ListHouses", housesString);
+            try
+            {
+                string housesString = JsonConvert.SerializeObject(Houses);
+                TriggerClientEvent("vorp_housing:ListHouses", housesString);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.TriggerClientListHouses()");
+            }
         }
 
         private static uint ConvertValue(string s)
