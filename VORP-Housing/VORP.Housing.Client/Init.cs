@@ -75,219 +75,262 @@ namespace VORP.Housing.Client
         #region Tick Methods
         private async Task UseInteriorCompsTickAsync()
         {
-            if (_configurationInstance.Config == null)
+            try
             {
-                return;
-            }
-
-            Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
-
-            int interiorIsIn = API.GetInteriorFromEntity(API.PlayerPedId());
-            if (Houses.TryGetValue((uint)interiorIsIn, out House house))
-            {
-                if (house.IsOwner)
+                if (_configurationInstance.Config == null)
                 {
-                    HouseJson houseIsIn = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == interiorIsIn);
-                    float invX = (float)houseIsIn.Inventory[0];
-                    float invY = (float)houseIsIn.Inventory[1];
-                    float invZ = (float)houseIsIn.Inventory[2];
-                    float invR = (float)houseIsIn.Inventory[3];
+                    return;
+                }
 
-                    Vector3 invCoords = new Vector3(invX, invY, invZ);
-                    
-                    if (Vector3.Distance(playerCoords, invCoords) <= invR)
+                Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
+
+                int interiorIsIn = API.GetInteriorFromEntity(API.PlayerPedId());
+                if (Houses.TryGetValue((uint)interiorIsIn, out House house))
+                {
+                    if (house.IsOwner)
                     {
-                        Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
-                        if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                        HouseJson houseIsIn = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == interiorIsIn);
+                        float invX = (float)houseIsIn.Inventory[0];
+                        float invY = (float)houseIsIn.Inventory[1];
+                        float invZ = (float)houseIsIn.Inventory[2];
+                        float invR = (float)houseIsIn.Inventory[3];
+
+                        Vector3 invCoords = new Vector3(invX, invY, invZ);
+
+                        if (Vector3.Distance(playerCoords, invCoords) <= invR)
                         {
-                            TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, interiorIsIn);
-                            TriggerServerEvent("vorp_housing:UpdateInventoryHouse", interiorIsIn);
+                            Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
+                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                            {
+                                TriggerEvent("vorp_inventory:OpenHouseInventory", houseIsIn.Name, interiorIsIn);
+                                TriggerServerEvent("vorp_housing:UpdateInventoryHouse", interiorIsIn);
+                            }
+                        }
+                    }
+                }
+
+                for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
+                {
+                    int roomId = _configurationInstance.Config.Rooms[i].Id;
+
+                    float invX = (float)_configurationInstance.Config.Rooms[i].Inventory[0];
+                    float invY = (float)_configurationInstance.Config.Rooms[i].Inventory[1];
+                    float invZ = (float)_configurationInstance.Config.Rooms[i].Inventory[2];
+                    float invR = (float)_configurationInstance.Config.Rooms[i].Inventory[3];
+
+                    if (Rooms.TryGetValue(roomId, out Room room) && !string.IsNullOrEmpty(room.Identifier))
+                    {
+                        Vector3 invCoords = new Vector3(invX, invY, invZ);
+                        if (Vector3.Distance(playerCoords, invCoords) < invR)
+                        {
+                            Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
+                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                            {
+                                TriggerEvent("vorp_inventory:OpenHouseInventory", _configurationInstance.Config.Rooms[i].Name, roomId);
+                                TriggerServerEvent("vorp_housing:UpdateInventoryHouse", roomId);
+                            }
                         }
                     }
                 }
             }
-
-            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
+            catch (Exception ex)
             {
-                int roomId = _configurationInstance.Config.Rooms[i].Id;
-
-                float invX = (float)_configurationInstance.Config.Rooms[i].Inventory[0];
-                float invY = (float)_configurationInstance.Config.Rooms[i].Inventory[1];
-                float invZ = (float)_configurationInstance.Config.Rooms[i].Inventory[2];
-                float invR = (float)_configurationInstance.Config.Rooms[i].Inventory[3];
-
-                if (Rooms.TryGetValue(roomId, out Room room) && !string.IsNullOrEmpty(room.Identifier))
-                {
-                    Vector3 invCoords = new Vector3(invX, invY, invZ);
-                    if (Vector3.Distance(playerCoords, invCoords) < invR)
-                    {
-                        Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
-                        if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
-                        {
-                            TriggerEvent("vorp_inventory:OpenHouseInventory", _configurationInstance.Config.Rooms[i].Name, roomId);
-                            TriggerServerEvent("vorp_housing:UpdateInventoryHouse", roomId);
-                        }
-                    }
-                }
+                Logger.Error(ex, $"Server.Init.UseInteriorCompsTickAsync()");
             }
         }
 
         private async Task ChangeStatusTickAsync()
         {
-            if (_configurationInstance.Config == null)
+            try
             {
-                return;
-            }
-
-            Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
-
-            // Check status of houses
-            for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
-            {
-                int houseId = (int)_configurationInstance.Config.Houses[i].Id;
-
-                float doorStatusX = (float)_configurationInstance.Config.Houses[i].DoorsStatus[0];
-                float doorStatusY = (float)_configurationInstance.Config.Houses[i].DoorsStatus[1];
-                float doorStatusZ = (float)_configurationInstance.Config.Houses[i].DoorsStatus[2];
-
-                if (Houses.TryGetValue((uint)houseId, out House house))
+                if (_configurationInstance.Config == null)
                 {
-                    Vector3 doorCoords = new Vector3(doorStatusX, doorStatusY, doorStatusZ);
-
-                    if (Vector3.Distance(playerCoords, doorCoords) < 2.5f)
-                    {
-                        if (string.IsNullOrEmpty(house.Identifier))
-                        {
-                            Functions.DrawTxt3D(doorCoords, string.Format(_configurationInstance.Language.PressToBuy, _configurationInstance.Config.Houses[i].Price));
-                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
-                            {
-                                TriggerServerEvent("vorp_housing:BuyHouse", houseId, _configurationInstance.Config.Houses[i].Price);
-                                await Delay(5000);
-                            }
-                        }
-
-                        if (house.IsOwner)
-                        {
-                            if (house.IsOpen)
-                            {
-                                ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToClose, false);
-                            }
-                            else
-                            {
-                                ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToOpen, true);
-                            }
-                        }
-                    }
+                    return;
                 }
-            }
 
-            // Check status of rooms
-            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
-            {
-                int roomId = _configurationInstance.Config.Rooms[i].Id;
+                Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
 
-                float doorStatusX = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[0];
-                float doorStatusY = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[1];
-                float doorStatusZ = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[2];
-
-                if (Rooms.TryGetValue(roomId, out Room room))
+                // Check status of houses
+                for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
                 {
-                    Vector3 doorCoords = new Vector3(doorStatusX, doorStatusY, doorStatusZ);
+                    int houseId = (int)_configurationInstance.Config.Houses[i].Id;
 
-                    if (Vector3.Distance(playerCoords, doorCoords) < 2.5f)
+                    float doorStatusX = (float)_configurationInstance.Config.Houses[i].DoorsStatus[0];
+                    float doorStatusY = (float)_configurationInstance.Config.Houses[i].DoorsStatus[1];
+                    float doorStatusZ = (float)_configurationInstance.Config.Houses[i].DoorsStatus[2];
+
+                    if (Houses.TryGetValue((uint)houseId, out House house))
                     {
-                        if (string.IsNullOrEmpty(room.Identifier))
+                        Vector3 doorCoords = new Vector3(doorStatusX, doorStatusY, doorStatusZ);
+
+                        if (Vector3.Distance(playerCoords, doorCoords) < 2.5f)
                         {
-                            Functions.DrawTxt3D(doorCoords, string.Format(_configurationInstance.Language.PressToBuyRoom, _configurationInstance.Config.Rooms[i].Price));
-                            if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                            if (string.IsNullOrEmpty(house.Identifier))
                             {
-                                TriggerServerEvent("vorp_housing:BuyRoom", roomId, _configurationInstance.Config.Rooms[i].Price);
-                                await Delay(5000);
-                            }
-                        }
-                        else
-                        {
-                            if (!_isInRoom)
-                            {
-                                Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToEnter);
+                                Functions.DrawTxt3D(doorCoords, string.Format(_configurationInstance.Language.PressToBuy, _configurationInstance.Config.Houses[i].Price));
                                 if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
                                 {
-                                    _isInRoom = true;
-                                    float tpEnterX = (float)_configurationInstance.Config.Rooms[i].TPEnter[0];
-                                    float tpEnterY = (float)_configurationInstance.Config.Rooms[i].TPEnter[1];
-                                    float tpEnterZ = (float)_configurationInstance.Config.Rooms[i].TPEnter[2];
-                                    API.DoScreenFadeOut(500);
-                                    await Delay(600);
-                                    API.SetEntityCoords(API.PlayerPedId(), tpEnterX, tpEnterY, tpEnterZ, false, false, false, false);
-                                    await Delay(100);
-                                    TriggerEvent("vorp:setInstancePlayer", true);
-                                    API.DoScreenFadeIn(500);
-                                    await Delay(3000);
+                                    TriggerServerEvent("vorp_housing:BuyHouse", houseId, _configurationInstance.Config.Houses[i].Price);
+                                    await Delay(5000);
                                 }
                             }
-                            else
+
+                            if (house.IsOwner)
                             {
-                                Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToLeave);
-                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                                if (house.IsOpen)
                                 {
-                                    _isInRoom = false;
-                                    float tpLeaveX = (float)_configurationInstance.Config.Rooms[i].TPLeave[0];
-                                    float tpLeaveY = (float)_configurationInstance.Config.Rooms[i].TPLeave[1];
-                                    float tpLeaveZ = (float)_configurationInstance.Config.Rooms[i].TPLeave[2];
-                                    API.DoScreenFadeOut(500);
-                                    await Delay(600);
-                                    API.SetEntityCoords(API.PlayerPedId(), tpLeaveX, tpLeaveY, tpLeaveZ, false, false, false, false);
-                                    await Delay(100);
-                                    TriggerEvent("vorp:setInstancePlayer", false);
-                                    API.DoScreenFadeIn(500);
-                                    await Delay(3000);
+                                    ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToClose, false);
+                                }
+                                else
+                                {
+                                    ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToOpen, true);
                                 }
                             }
                         }
                     }
                 }
+
+                // Check status of rooms
+                for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
+                {
+                    int roomId = _configurationInstance.Config.Rooms[i].Id;
+
+                    float doorStatusX = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[0];
+                    float doorStatusY = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[1];
+                    float doorStatusZ = (float)_configurationInstance.Config.Rooms[i].DoorsStatus[2];
+
+                    if (Rooms.TryGetValue(roomId, out Room room))
+                    {
+                        Vector3 doorCoords = new Vector3(doorStatusX, doorStatusY, doorStatusZ);
+
+                        if (Vector3.Distance(playerCoords, doorCoords) < 2.5f)
+                        {
+                            if (string.IsNullOrEmpty(room.Identifier))
+                            {
+                                Functions.DrawTxt3D(doorCoords, string.Format(_configurationInstance.Language.PressToBuyRoom, _configurationInstance.Config.Rooms[i].Price));
+                                if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                                {
+                                    TriggerServerEvent("vorp_housing:BuyRoom", roomId, _configurationInstance.Config.Rooms[i].Price);
+                                    await Delay(5000);
+                                }
+                            }
+                            else
+                            {
+                                if (!_isInRoom)
+                                {
+                                    Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToEnter);
+                                    if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                                    {
+                                        _isInRoom = true;
+                                        float tpEnterX = (float)_configurationInstance.Config.Rooms[i].TPEnter[0];
+                                        float tpEnterY = (float)_configurationInstance.Config.Rooms[i].TPEnter[1];
+                                        float tpEnterZ = (float)_configurationInstance.Config.Rooms[i].TPEnter[2];
+                                        API.DoScreenFadeOut(500);
+                                        await Delay(600);
+                                        API.SetEntityCoords(API.PlayerPedId(), tpEnterX, tpEnterY, tpEnterZ, false, false, false, false);
+                                        await Delay(100);
+                                        TriggerEvent("vorp:setInstancePlayer", true);
+                                        API.DoScreenFadeIn(500);
+                                        await Delay(3000);
+                                    }
+                                }
+                                else
+                                {
+                                    Functions.DrawTxt3D(doorCoords, _configurationInstance.Language.PressToLeave);
+                                    if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
+                                    {
+                                        _isInRoom = false;
+                                        float tpLeaveX = (float)_configurationInstance.Config.Rooms[i].TPLeave[0];
+                                        float tpLeaveY = (float)_configurationInstance.Config.Rooms[i].TPLeave[1];
+                                        float tpLeaveZ = (float)_configurationInstance.Config.Rooms[i].TPLeave[2];
+                                        API.DoScreenFadeOut(500);
+                                        await Delay(600);
+                                        API.SetEntityCoords(API.PlayerPedId(), tpLeaveX, tpLeaveY, tpLeaveZ, false, false, false, false);
+                                        await Delay(100);
+                                        TriggerEvent("vorp:setInstancePlayer", false);
+                                        API.DoScreenFadeIn(500);
+                                        await Delay(3000);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Server.Init.ChangeStatusTickAsync()");
             }
         }
 
         private async Task DoorLockedsTickAsync()
         {
-            if (_configurationInstance.Config == null)
+            try
             {
-                return;
-            }
-
-            Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
-
-            for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
-            {
-                uint houseId = _configurationInstance.Config.Houses[i].Id;
-                for (int o = 0; o < _configurationInstance.Config.Houses[i].Doors.Count; o++)
+                if (_configurationInstance.Config == null)
                 {
-                    float doorX = (float)_configurationInstance.Config.Houses[i].Doors[o][0];
-                    float doorY = (float)_configurationInstance.Config.Houses[i].Doors[o][1];
-                    float doorZ = (float)_configurationInstance.Config.Houses[i].Doors[o][2];
-                    float doorH = (float)_configurationInstance.Config.Houses[i].Doors[o][3];
+                    return;
+                }
 
-                    Vector3 doorCoords = new Vector3(doorX, doorY, doorZ);
+                Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
 
-                    if (Vector3.Distance(playerCoords, doorCoords) < 6.0f)
+                for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
+                {
+                    uint houseId = _configurationInstance.Config.Houses[i].Id;
+                    for (int o = 0; o < _configurationInstance.Config.Houses[i].Doors.Count; o++)
                     {
-                        if (Houses.TryGetValue(houseId, out House house) && house.IsOpen)
+                        float doorX = (float)_configurationInstance.Config.Houses[i].Doors[o][0];
+                        float doorY = (float)_configurationInstance.Config.Houses[i].Doors[o][1];
+                        float doorZ = (float)_configurationInstance.Config.Houses[i].Doors[o][2];
+                        float doorH = (float)_configurationInstance.Config.Houses[i].Doors[o][3];
+
+                        Vector3 doorCoords = new Vector3(doorX, doorY, doorZ);
+
+                        if (Vector3.Distance(playerCoords, doorCoords) < 6.0f)
                         {
-                            //await Functions.DrawTxt3D(doorCoords, "Puerta Abierta");
-                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
-                            bool hit = false;
-                            Vector3 endCoords = new Vector3();
-                            Vector3 surfaceNormal = new Vector3();
-                            int entity = 0;
-                            int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                            //API.SetEntityHeading(entity, doorH);
-                            API.FreezeEntityPosition(entity, false);
-                            API.DoorSystemSetDoorState(entity, 0);
+                            if (Houses.TryGetValue(houseId, out House house) && house.IsOpen)
+                            {
+                                //await Functions.DrawTxt3D(doorCoords, "Puerta Abierta");
+                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
+                                bool hit = false;
+                                Vector3 endCoords = new Vector3();
+                                Vector3 surfaceNormal = new Vector3();
+                                int entity = 0;
+                                int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
+                                //API.SetEntityHeading(entity, doorH);
+                                API.FreezeEntityPosition(entity, false);
+                                API.DoorSystemSetDoorState(entity, 0);
+                            }
+                            else
+                            {
+                                //await Functions.DrawTxt3D(doorCoords, "Puerta Cerrada");
+                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
+                                bool hit = false;
+                                Vector3 endCoords = new Vector3();
+                                Vector3 surfaceNormal = new Vector3();
+                                int entity = 0;
+                                int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
+                                API.SetEntityHeading(entity, doorH);
+                                API.FreezeEntityPosition(entity, true);
+                                API.DoorSystemSetDoorState(entity, 1);
+                            }
                         }
-                        else
+                    }
+                }
+
+                for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
+                {
+                    for (int o = 0; o < _configurationInstance.Config.Rooms[i].Doors.Count; o++)
+                    {
+                        float doorX = (float)_configurationInstance.Config.Rooms[i].Doors[o][0];
+                        float doorY = (float)_configurationInstance.Config.Rooms[i].Doors[o][1];
+                        float doorZ = (float)_configurationInstance.Config.Rooms[i].Doors[o][2];
+                        float doorH = (float)_configurationInstance.Config.Rooms[i].Doors[o][3];
+
+                        Vector3 doorCoords = new Vector3(doorX, doorY, doorZ);
+
+                        if (Vector3.Distance(playerCoords, doorCoords) < 12.0f)
                         {
-                            //await Functions.DrawTxt3D(doorCoords, "Puerta Cerrada");
                             int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
                             bool hit = false;
                             Vector3 endCoords = new Vector3();
@@ -301,31 +344,9 @@ namespace VORP.Housing.Client
                     }
                 }
             }
-
-            for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
+            catch (Exception ex)
             {
-                for (int o = 0; o < _configurationInstance.Config.Rooms[i].Doors.Count; o++)
-                {
-                    float doorX = (float)_configurationInstance.Config.Rooms[i].Doors[o][0];
-                    float doorY = (float)_configurationInstance.Config.Rooms[i].Doors[o][1];
-                    float doorZ = (float)_configurationInstance.Config.Rooms[i].Doors[o][2];
-                    float doorH = (float)_configurationInstance.Config.Rooms[i].Doors[o][3];
-
-                    Vector3 doorCoords = new Vector3(doorX, doorY, doorZ);
-
-                    if (Vector3.Distance(playerCoords, doorCoords) < 12.0f)
-                    {
-                        int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
-                        bool hit = false;
-                        Vector3 endCoords = new Vector3();
-                        Vector3 surfaceNormal = new Vector3();
-                        int entity = 0;
-                        int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                        API.SetEntityHeading(entity, doorH);
-                        API.FreezeEntityPosition(entity, true);
-                        API.DoorSystemSetDoorState(entity, 1);
-                    }
-                }
+                Logger.Error(ex, $"Server.Init.DoorLockedsTickAsync()");
             }
         }
         #endregion
