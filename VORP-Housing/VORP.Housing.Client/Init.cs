@@ -34,7 +34,7 @@ namespace VORP.Housing.Client
 
             AttachTickHandler(UseInteriorCompsTickAsync);
             AttachTickHandler(ChangeStatusTickAsync);
-            AttachTickHandler(DoorLockedsTickAsync);
+            AttachTickHandler(DoorLocksTickAsync);
         }
 
         #region Private Methods
@@ -263,7 +263,7 @@ namespace VORP.Housing.Client
             }
         }
 
-        private async Task DoorLockedsTickAsync()
+        private async Task DoorLocksTickAsync()
         {
             try
             {
@@ -349,7 +349,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Client.Init.DoorLockedsTickAsync()");
+                Logger.Error(ex, $"Client.Init.DoorLocksTickAsync()");
             }
         }
         #endregion
