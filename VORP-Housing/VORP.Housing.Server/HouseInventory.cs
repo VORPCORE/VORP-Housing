@@ -106,8 +106,8 @@ namespace VORP.Housing.Server
 
                                             JObject items = new JObject
                                             {
-                                            { "itemList", houseData },
-                                            { "action", "setSecondInventoryItems" }
+                                                { "itemList", houseData },
+                                                { "action", "setSecondInventoryItems" }
                                             };
 
                                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -172,8 +172,8 @@ namespace VORP.Housing.Server
 
                                             JObject items = new JObject
                                             {
-                                            { "itemList", houseData },
-                                            { "action", "setSecondInventoryItems" }
+                                                { "itemList", houseData },
+                                                { "action", "setSecondInventoryItems" }
                                             };
 
                                             player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -257,8 +257,8 @@ namespace VORP.Housing.Server
 
                                                 JObject items = new JObject
                                                 {
-                                                { "itemList", houseData },
-                                                { "action", "setSecondInventoryItems" }
+                                                    { "itemList", houseData },
+                                                    { "action", "setSecondInventoryItems" }
                                                 };
 
                                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -330,8 +330,8 @@ namespace VORP.Housing.Server
 
                                                 JObject items = new JObject
                                                 {
-                                                { "itemList", houseData },
-                                                { "action", "setSecondInventoryItems" }
+                                                    { "itemList", houseData },
+                                                    { "action", "setSecondInventoryItems" }
                                                 };
 
                                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -471,8 +471,8 @@ namespace VORP.Housing.Server
                                         Logger.Debug(houseData.ToString().Replace(Environment.NewLine, " "));
                                         JObject items = new JObject
                                         {
-                                        { "itemList", houseData },
-                                        { "action", "setSecondInventoryItems" }
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
                                         };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -487,8 +487,8 @@ namespace VORP.Housing.Server
 
                                         JObject items = new JObject
                                         {
-                                        { "itemList", houseData },
-                                        { "action", "setSecondInventoryItems" }
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
                                         };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -511,8 +511,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -527,8 +527,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -583,8 +583,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -603,8 +603,8 @@ namespace VORP.Housing.Server
                                         Export["ghmattimysql"].execute("UPDATE housing SET inventory=? WHERE identifier=? AND charidentifier=? AND id=?", new object[] { houseData.ToString().Replace(Environment.NewLine, " "), sid, charIdentifier, houseId });
                                         JObject items = new JObject
                                         {
-                                        { "itemList", houseData },
-                                        { "action", "setSecondInventoryItems" }
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
                                         };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -619,8 +619,8 @@ namespace VORP.Housing.Server
 
                                         JObject items = new JObject
                                         {
-                                        { "itemList", houseData },
-                                        { "action", "setSecondInventoryItems" }
+                                            { "itemList", houseData },
+                                            { "action", "setSecondInventoryItems" }
                                         };
 
                                         player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -642,8 +642,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -658,8 +658,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
