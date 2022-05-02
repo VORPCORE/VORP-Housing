@@ -11,6 +11,12 @@ namespace VORP.Housing.Shared.Models.Json
         [JsonProperty("Name")]
         public string Name { get; set; }
 
+        [JsonProperty("DoorHashes")]
+        public List<uint> DoorHashes { get; set; }
+
+        [JsonProperty("DoorModelHashes")]
+        public List<int> DoorModelHashes { get; set; }
+
         [JsonProperty("Price")]
         public double Price { get; set; }
 
@@ -37,6 +43,12 @@ namespace VORP.Housing.Shared.Models.Json
     {
         [JsonProperty("Id")]
         public uint Id { get; set; }
+
+        [JsonProperty("DoorHashes")]
+        public List<uint> DoorHashes { get; set; }
+
+        [JsonProperty("DoorModelHashes")]
+        public List<int> DoorModelHashes { get; set; }
 
         [JsonProperty("InteriorName")]
         public string InteriorName { get; set; }

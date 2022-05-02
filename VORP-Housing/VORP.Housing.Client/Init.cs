@@ -276,43 +276,44 @@ namespace VORP.Housing.Client
 
                 for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
                 {
-                    uint houseId = _configurationInstance.Config.Houses[i].Id;
-                    for (int o = 0; o < _configurationInstance.Config.Houses[i].Doors.Count; o++)
+                    HouseJson houseJson = _configurationInstance.Config.Houses[i];
+                    for (int o = 0; o < houseJson.Doors.Count; o++)
                     {
-                        float doorX = (float)_configurationInstance.Config.Houses[i].Doors[o][0];
-                        float doorY = (float)_configurationInstance.Config.Houses[i].Doors[o][1];
-                        float doorZ = (float)_configurationInstance.Config.Houses[i].Doors[o][2];
-                        float doorH = (float)_configurationInstance.Config.Houses[i].Doors[o][3];
+                        float doorX = (float)houseJson.Doors[o][0];
+                        float doorY = (float)houseJson.Doors[o][1];
+                        float doorZ = (float)houseJson.Doors[o][2];
+                        float doorH = (float)houseJson.Doors[o][3];
 
                         Vector3 doorCoords = new Vector3(doorX, doorY, doorZ);
 
                         if (Vector3.Distance(playerCoords, doorCoords) < 6.0f)
                         {
-                            if (Houses.TryGetValue(houseId, out House house) && house.IsOpen)
+                            uint doorHash = houseJson.DoorHashes[o];
+                            
+                            if (Houses.TryGetValue(houseJson.Id, out House house) && house.IsOpen)
                             {
-                                //await Functions.DrawTxt3D(doorCoords, "Puerta Abierta");
-                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
-                                bool hit = false;
-                                Vector3 endCoords = new Vector3();
-                                Vector3 surfaceNormal = new Vector3();
-                                int entity = 0;
-                                int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                                //API.SetEntityHeading(entity, doorH);
-                                API.FreezeEntityPosition(entity, false);
-                                API.DoorSystemSetDoorState(entity, 0);
+                                if (DoorSystemGetDoorState(doorHash) != 0)
+                                {
+                                    Functions.AddDoorToSystemNew(doorHash);
+                                    Functions.DoorSystemSetDoorState(doorHash, 0);
+                                }
                             }
                             else
                             {
-                                //await Functions.DrawTxt3D(doorCoords, "Puerta Cerrada");
-                                int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
-                                bool hit = false;
-                                Vector3 endCoords = new Vector3();
-                                Vector3 surfaceNormal = new Vector3();
-                                int entity = 0;
-                                int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                                API.SetEntityHeading(entity, doorH);
-                                API.FreezeEntityPosition(entity, true);
-                                API.DoorSystemSetDoorState(entity, 1);
+                                int entity = Functions.GetEntityByDoorHash(doorHash);
+
+                                if (API.DoorSystemGetOpenRatio(doorHash) != 0.0f)
+                                {
+                                    Functions.DoorSystemSetOpenRatio(doorHash);
+                                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                                }
+
+                                if (DoorSystemGetDoorState(doorHash) != 1)
+                                {
+                                    Functions.AddDoorToSystemNew(doorHash);
+                                    Functions.DoorSystemSetDoorState(doorHash, 1);
+                                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                                }
                             }
                         }
                     }
@@ -331,7 +332,7 @@ namespace VORP.Housing.Client
 
                         if (Vector3.Distance(playerCoords, doorCoords) < 12.0f)
                         {
-                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // void SHAPETEST::START_SHAPE_TEST_BOX
+                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // ScrHandle SHAPETEST::START_SHAPE_TEST_BOX
                             bool hit = false;
                             Vector3 endCoords = new Vector3();
                             Vector3 surfaceNormal = new Vector3();
@@ -343,6 +344,8 @@ namespace VORP.Housing.Client
                         }
                     }
                 }
+
+                await Delay(500);
             }
             catch (Exception ex)
             {
