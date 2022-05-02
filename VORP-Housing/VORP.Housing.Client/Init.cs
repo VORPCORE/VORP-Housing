@@ -135,7 +135,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.UseInteriorCompsTickAsync()");
+                Logger.Error(ex, $"Client.Init.UseInteriorCompsTickAsync()");
             }
         }
 
@@ -259,7 +259,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.ChangeStatusTickAsync()");
+                Logger.Error(ex, $"Client.Init.ChangeStatusTickAsync()");
             }
         }
 
@@ -349,7 +349,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.DoorLockedsTickAsync()");
+                Logger.Error(ex, $"Client.Init.DoorLockedsTickAsync()");
             }
         }
         #endregion
@@ -381,7 +381,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.SetBlips()");
+                Logger.Error(ex, $"Client.Init.SetBlips()");
             }
         }
 
@@ -407,7 +407,7 @@ namespace VORP.Housing.Client
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.ChangeDoorState()");
+                Logger.Error(ex, $"Client.Init.ChangeDoorState()");
             }
         }
         #endregion
