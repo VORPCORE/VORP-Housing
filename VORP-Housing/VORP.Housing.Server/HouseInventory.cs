@@ -13,13 +13,13 @@ namespace VORP.Housing.Server
 
         public void Initialize()
         {
-            AddEvent("vorp_housing:TakeFromHouse", new Action<Player, string>(TakeFromHouse));
-            AddEvent("vorp_housing:MoveToHouse", new Action<Player, string>(MoveToHouse));
-            AddEvent("vorp_housing:UpdateInventoryHouse", new Action<Player, int>(UpdateInventoryHouse));
+            AddEvent("vorp_housing:TakeFromHouse", new Action<Player, string>(TakeFromHouseAsync));
+            AddEvent("vorp_housing:MoveToHouse", new Action<Player, string>(MoveToHouseAsync));
+            AddEvent("vorp_housing:UpdateInventoryHouse", new Action<Player, int>(UpdateInventoryHouseAsync));
         }
 
         #region Private Methods
-        private async void TakeFromHouse([FromSource] Player player, string jsonData)
+        private async void TakeFromHouseAsync([FromSource] Player player, string jsonData)
         {
             try
             {
@@ -354,11 +354,11 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.TakeFromHouse()");
+                Logger.Error(ex, $"Server.Init.TakeFromHouseAsync()");
             }
         }
 
-        private async void MoveToHouse([FromSource] Player player, string jsonData)
+        private async void MoveToHouseAsync([FromSource] Player player, string jsonData)
         {
             try
             {
@@ -380,18 +380,16 @@ namespace VORP.Housing.Server
 
                 int houseId = data["house"].ToObject<int>();
 
-                string type = data["item"]["type"].ToString();
-
-                string label = data["item"]["label"].ToString();
-                string name = data["item"]["name"].ToString();
-
                 int count = data["item"]["count"].ToObject<int>();
+                string name = data["item"]["name"].ToString();
+                string type = data["item"]["type"].ToString();
+                string label = data["item"]["label"].ToString();
+
                 int number = data["number"].ToObject<int>();
 
-                JArray itemBlackList = JArray.Parse(_configurationInstance.Config.ItemsBlacklist.ToString());
-                foreach (var blackListItem in itemBlackList)
+                foreach (string blackListItem in _configurationInstance.Config.ItemsBlacklist)
                 {
-                    if (blackListItem.ToString().Equals(name))
+                    if (blackListItem == name)
                     {
                         player.TriggerEvent("vorp:TipBottom", _configurationInstance.Language.ItemInBlacklist, 2500);
                         return;
@@ -431,7 +429,7 @@ namespace VORP.Housing.Server
                                 if (type.Contains("item_weapon"))
                                 {
                                     number = 1; // fix count 0
-                            }
+                                }
 
                                 if (maxWeight < (number + totalWeight))
                                 {
@@ -450,8 +448,8 @@ namespace VORP.Housing.Server
 
                                     JObject items = new JObject
                                     {
-                                    { "itemList", houseData },
-                                    { "action", "setSecondInventoryItems" }
+                                        { "itemList", houseData },
+                                        { "action", "setSecondInventoryItems" }
                                     };
 
                                     player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -501,7 +499,6 @@ namespace VORP.Housing.Server
 
                                 if (type.Contains("item_weapon"))
                                 {
-
                                     data["item"]["count"] = 1;
                                     int weapId = data["item"]["id"].ToObject<int>();
                                     houseData.Add(data["item"]);
@@ -671,22 +668,21 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.MoveToHouse()");
+                Logger.Error(ex, $"Server.Init.MoveToHouseAsync()");
             }
         }
 
-        private async void UpdateInventoryHouse([FromSource] Player player, int houseId)
+        private async void UpdateInventoryHouseAsync([FromSource] Player player, int interiorId)
         {
             try
             {
                 string sid = "steam:" + player.Identifiers["steam"];
-
                 int source = int.Parse(player.Handle);
                 int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
-                if (Init.RoomsDb.ContainsKey(houseId))
+                if (Init.RoomsDb.ContainsKey(interiorId))
                 {
-                    Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                    Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, interiorId }, new Action<dynamic>((result) =>
                     {
                         if (result.Count != 0)
                         {
@@ -714,7 +710,7 @@ namespace VORP.Housing.Server
                 }
                 else
                 {
-                    Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
+                    Export["ghmattimysql"].execute("SELECT * FROM housing WHERE identifier=? AND charidentifier=? AND id=?", new object[] { sid, charIdentifier, interiorId }, new Action<dynamic>((result) =>
                     {
                         if (result.Count != 0)
                         {
@@ -743,7 +739,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.UpdateInventoryHouse()");
+                Logger.Error(ex, $"Server.Init.UpdateInventoryHouseAsync()");
             }
         }
         #endregion

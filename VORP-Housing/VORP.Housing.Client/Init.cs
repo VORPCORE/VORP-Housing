@@ -74,7 +74,7 @@ namespace VORP.Housing.Client
         {
             try
             {
-                if (_configurationInstance.Config == null)
+                if (_configurationInstance.Config == null || API.IsEntityDead(API.PlayerPedId()))
                 {
                     return;
                 }
@@ -137,7 +137,7 @@ namespace VORP.Housing.Client
         {
             try
             {
-                if (_configurationInstance.Config == null)
+                if (_configurationInstance.Config == null || API.IsEntityDead(API.PlayerPedId()))
                 {
                     return;
                 }
@@ -258,7 +258,7 @@ namespace VORP.Housing.Client
         {
             try
             {
-                if (_configurationInstance.Config == null)
+                if (_configurationInstance.Config == null || API.IsEntityDead(API.PlayerPedId()))
                 {
                     return;
                 }
