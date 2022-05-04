@@ -267,6 +267,7 @@ namespace VORP.Housing.Client
 
                 Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
 
+                // Check if house doors are locked
                 for (int i = 0; i < _configurationInstance.Config.Houses.Count; i++)
                 {
                     HouseJson houseJson = _configurationInstance.Config.Houses[i];
@@ -285,6 +286,7 @@ namespace VORP.Housing.Client
                             
                             if (HousesDb.TryGetValue(houseJson.Id, out House house) && house.IsOpen)
                             {
+                                // Lock the door if it isn't already
                                 if (API.DoorSystemGetDoorState(doorHash) != 0)
                                 {
                                     Functions.AddDoorToSystemNew(doorHash);
@@ -301,6 +303,7 @@ namespace VORP.Housing.Client
                                     API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
                                 }
 
+                                // Unlock the door if it isn't already
                                 if (API.DoorSystemGetDoorState(doorHash) != 1)
                                 {
                                     Functions.AddDoorToSystemNew(doorHash);
@@ -312,6 +315,7 @@ namespace VORP.Housing.Client
                     }
                 }
 
+                // Check if room doors are locked
                 for (int i = 0; i < _configurationInstance.Config.Rooms.Count; i++)
                 {
                     RoomJson roomJson = _configurationInstance.Config.Rooms[i];
@@ -326,15 +330,22 @@ namespace VORP.Housing.Client
 
                         if (Vector3.Distance(playerCoords, doorCoords) < 12.0f)
                         {
-                            int shapeTest = Function.Call<int>((Hash)0xFE466162C4401D18, doorX, doorY, doorZ, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, true, 16); // ScrHandle SHAPETEST::START_SHAPE_TEST_BOX
-                            bool hit = false;
-                            Vector3 endCoords = new Vector3();
-                            Vector3 surfaceNormal = new Vector3();
-                            int entity = 0;
-                            int result = API.GetShapeTestResult(shapeTest, ref hit, ref endCoords, ref surfaceNormal, ref entity);
-                            API.SetEntityHeading(entity, doorH);
-                            API.FreezeEntityPosition(entity, true);
-                            API.DoorSystemSetDoorState(entity, 1);
+                            uint doorHash = roomJson.DoorHashes[o];
+                            int entity = Functions.GetEntityByDoorHash(doorHash);
+
+                            if (API.DoorSystemGetOpenRatio(doorHash) != 0.0f)
+                            {
+                                Functions.DoorSystemSetOpenRatio(doorHash);
+                                API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                            }
+
+                            // Unlock the door if it isn't already
+                            if (API.DoorSystemGetDoorState(doorHash) != 1)
+                            {
+                                Functions.AddDoorToSystemNew(doorHash);
+                                Functions.DoorSystemSetDoorState(doorHash, 1);
+                                API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                            }
                         }
                     }
                 }
