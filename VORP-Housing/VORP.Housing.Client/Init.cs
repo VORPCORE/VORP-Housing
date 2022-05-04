@@ -181,11 +181,11 @@ namespace VORP.Housing.Client
                             {
                                 if (house.IsOpen)
                                 {
-                                    ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToClose, false);
+                                    await ChangeDoorStateAsync(doorCoords, house, _configurationInstance.Language.PressToClose, false);
                                 }
                                 else
                                 {
-                                    ChangeDoorState(doorCoords, house, _configurationInstance.Language.PressToOpen, true);
+                                    await ChangeDoorStateAsync(doorCoords, house, _configurationInstance.Language.PressToOpen, true);
                                 }
                             }
                         }
@@ -295,21 +295,7 @@ namespace VORP.Housing.Client
                             }
                             else
                             {
-                                int entity = Functions.GetEntityByDoorHash(doorHash);
-
-                                if (API.DoorSystemGetOpenRatio(doorHash) != 0.0f)
-                                {
-                                    Functions.DoorSystemSetOpenRatio(doorHash);
-                                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
-                                }
-
-                                // Unlock the door if it isn't already
-                                if (API.DoorSystemGetDoorState(doorHash) != 1)
-                                {
-                                    Functions.AddDoorToSystemNew(doorHash);
-                                    Functions.DoorSystemSetDoorState(doorHash, 1);
-                                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
-                                }
+                                UnlockDoor(doorHash, doorH);
                             }
                         }
                     }
@@ -330,22 +316,7 @@ namespace VORP.Housing.Client
 
                         if (Vector3.Distance(playerCoords, doorCoords) < 12.0f)
                         {
-                            uint doorHash = roomJson.DoorHashes[o];
-                            int entity = Functions.GetEntityByDoorHash(doorHash);
-
-                            if (API.DoorSystemGetOpenRatio(doorHash) != 0.0f)
-                            {
-                                Functions.DoorSystemSetOpenRatio(doorHash);
-                                API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
-                            }
-
-                            // Unlock the door if it isn't already
-                            if (API.DoorSystemGetDoorState(doorHash) != 1)
-                            {
-                                Functions.AddDoorToSystemNew(doorHash);
-                                Functions.DoorSystemSetDoorState(doorHash, 1);
-                                API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
-                            }
+                            UnlockDoor(roomJson.DoorHashes[o], doorH);
                         }
                     }
                 }
@@ -397,7 +368,7 @@ namespace VORP.Housing.Client
         /// <param name="house">The house that owns the door</param>
         /// <param name="languagePrompt">Prompt to either close or open a door</param>
         /// <param name="state">Assign the state of the door (open = true/close = false)</param>
-        private async void ChangeDoorState(Vector3 doorCoords, House house, string languagePrompt, bool state)
+        private async Task ChangeDoorStateAsync(Vector3 doorCoords, House house, string languagePrompt, bool state)
         {
             try
             {
@@ -439,6 +410,37 @@ namespace VORP.Housing.Client
             catch (Exception ex)
             {
                 Logger.Error(ex, $"Client.Init.TeleportPlayerWithScreenFadeAsync()");
+            }
+        }
+
+        /// <summary>
+        /// Unlock door for a room/house via "door hash" and provide heading/yaw of door
+        /// </summary>
+        /// <param name="doorHash">Door's hash</param>
+        /// <param name="doorH">Door's heading/yaw for door positioning</param>
+        private void UnlockDoor(uint doorHash, float doorH)
+        {
+            try
+            {
+                int entity = Functions.GetEntityByDoorHash(doorHash);
+
+                if (API.DoorSystemGetOpenRatio(doorHash) != 0.0f)
+                {
+                    Functions.DoorSystemSetOpenRatio(doorHash);
+                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                }
+
+                // Unlock the door if it isn't already
+                if (API.DoorSystemGetDoorState(doorHash) != 1)
+                {
+                    Functions.AddDoorToSystemNew(doorHash);
+                    Functions.DoorSystemSetDoorState(doorHash, 1);
+                    API.SetEntityRotation(entity, 0.0f, 0.0f, doorH, 2, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Client.Init.UnlockDoor()");
             }
         }
         #endregion
