@@ -99,20 +99,6 @@
       "MaxWeight": 50
     },
     {
-      "Id": 10754,
-      "DoorHashes": [ 0 ],
-      "DoorModelHashes": [ 0 ],
-      "InteriorName": "rdl_house_wilchest",
-      "Name": "Cabaña en Río del Lobo Rock",
-      "Price": 467.0,
-      "DoorsStatus": [ -3481.58, -3468.89, 0.26 ],
-      "Doors": [
-        [ -3481.534, -3469.404, -0.8164485, 90.343109130859 ]
-      ],
-      "Inventory": [ -3483.92, -3470.32, 0.22, 1.5 ],
-      "MaxWeight": 50
-    },
-    {
       "Id": 14338,
       "DoorHashes": [ 1928053488 ],
       "DoorModelHashes": [ -1819321039 ],
