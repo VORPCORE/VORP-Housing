@@ -58,7 +58,7 @@ namespace VORP.Housing.Server
                 {
                     int weaponId = data["item"]["id"].ToObject<int>();
 
-                    if (Init.Rooms.ContainsKey(houseId))
+                    if (Init.RoomsDb.ContainsKey(houseId))
                     {
                         Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                         {
@@ -205,7 +205,7 @@ namespace VORP.Housing.Server
                             return;
                         }
 
-                        if (Init.Rooms.ContainsKey(houseId))
+                        if (Init.RoomsDb.ContainsKey(houseId))
                         {
                             Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                             {
@@ -404,7 +404,7 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                if (Init.Rooms.ContainsKey(houseId))
+                if (Init.RoomsDb.ContainsKey(houseId))
                 {
                     Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {
@@ -426,7 +426,7 @@ namespace VORP.Housing.Server
                                     totalWeight += hd["count"].ToObject<int>();
                                 }
 
-                                int maxWeight = Init.Rooms[houseId].MaxWeight;
+                                int maxWeight = Init.RoomsDb[houseId].MaxWeight;
 
                                 if (type.Contains("item_weapon"))
                                 {
@@ -559,7 +559,7 @@ namespace VORP.Housing.Server
                                     totalWeight += hd["count"].ToObject<int>();
                                 }
 
-                                int maxWeight = Init.Houses[(uint)houseId].MaxWeight;
+                                int maxWeight = Init.HousesDb[(uint)houseId].MaxWeight;
 
                                 if (type.Contains("item_weapon"))
                                 {
@@ -684,7 +684,7 @@ namespace VORP.Housing.Server
                 int source = int.Parse(player.Handle);
                 int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
-                if (Init.Rooms.ContainsKey(houseId))
+                if (Init.RoomsDb.ContainsKey(houseId))
                 {
                     Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {

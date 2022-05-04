@@ -9,7 +9,6 @@
         public double Price { get; set; }
         public string Furniture { get; set; }
         public bool IsOpen { get; set; }
-        public bool IsOwner { get; set; }
         public int MaxWeight { get; set; }
     }
 }

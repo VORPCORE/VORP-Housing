@@ -13,8 +13,8 @@ namespace VORP.Housing.Server
     {
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
 
-        public static Dictionary<uint, House> Houses = new Dictionary<uint, House>();
-        public static Dictionary<int, Room> Rooms = new Dictionary<int, Room>();
+        public static Dictionary<uint, House> HousesDb = new Dictionary<uint, House>();
+        public static Dictionary<int, Room> RoomsDb = new Dictionary<int, Room>();
         
         public void Initialize()
         {
@@ -32,7 +32,7 @@ namespace VORP.Housing.Server
             {
                 foreach (HouseJson house in _configurationInstance.Config.Houses)
                 {
-                    Houses.Add(house.Id, new House
+                    HousesDb.Add(house.Id, new House
                     {
                         Id = house.Id,
                         Interior = house.InteriorName,
@@ -47,7 +47,7 @@ namespace VORP.Housing.Server
 
                 foreach (RoomJson room in _configurationInstance.Config.Rooms)
                 {
-                    Rooms.Add(room.Id, new Room
+                    RoomsDb.Add(room.Id, new Room
                     {
                         Id = room.Id,
                         Identifier = null,
@@ -75,11 +75,17 @@ namespace VORP.Housing.Server
                 if (player == null)
                 {
                     Logger.Error($"Server.Init.GetRoomsAsync(): Player \"{source}\" does not exist.");
+
                     TriggerClientListRooms(); // return default list
                     return;
                 }
 
-                dynamic tableExist = await Export["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'rooms' LIMIT 1;", new string[] { });
+                dynamic tableExist = await Export["ghmattimysql"].executeSync(
+                    "SELECT * FROM information_schema.tables " +
+                    "WHERE table_schema = 'vorpv2' AND table_name = 'rooms' " +
+                    "LIMIT 1;", 
+                    new string[] { });
+
                 if (tableExist.Count == 0)
                 {
                     Logger.Error("Server.Init.GetRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
@@ -89,19 +95,7 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                string sid = "steam:" + player.Identifiers["steam"];
-
-                int charIdentifier = await player.GetCoreUserCharacterIdAsync();
-                if (charIdentifier == -1)
-                {
-                    Logger.Warn("Server.Init.GetRoomsAsync(): Player charIdentifier returned -1. " +
-                        "Skipping charIdentifier-based SQL lookup for rooms...");
-
-                    TriggerClientListRooms(); // return default list
-                    return;
-                }
-
-                dynamic result = await Export["ghmattimysql"].executeSync("SELECT * FROM rooms WHERE identifier = ? AND charidentifier = ?", new object[] { sid, charIdentifier });
+                dynamic result = await Export["ghmattimysql"].executeSync("SELECT * FROM rooms", new string[] { });
 
                 if (result != null && result.Count > 0)
                 {
@@ -112,8 +106,8 @@ namespace VORP.Housing.Server
                         int roomId = r.interiorId;
                         string identifier = r.identifier;
                         int charidentifier = r.charidentifier;
-                        Rooms[roomId].Identifier = identifier;
-                        Rooms[roomId].CharIdentifier = charidentifier;
+                        RoomsDb[roomId].Identifier = identifier;
+                        RoomsDb[roomId].CharIdentifier = charidentifier;
                     }
                 }
 
@@ -137,9 +131,12 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                string sid = "steam:" + player.Identifiers["steam"];
+                dynamic tableExist = await Export["ghmattimysql"].executeSync(
+                    "SELECT * FROM information_schema.tables " +
+                    "WHERE table_schema = 'vorpv2' AND table_name = 'housing' " +
+                    "LIMIT 1;", 
+                    new string[] { });
 
-                dynamic tableExist = await Export["ghmattimysql"].executeSync("SELECT * FROM information_schema.tables WHERE table_schema = 'vorpv2' AND table_name = 'housing' LIMIT 1;", new string[] { });
                 if (tableExist.Count == 0)
                 {
                     Logger.Error("Server.Init.GetHousesAsync(): SQL table \"housing\" doesn't exist. " +
@@ -167,16 +164,10 @@ namespace VORP.Housing.Server
                             furniture = r.furniture;
                         }
 
-                        Houses[houseId].Identifier = identifier;
-                        Houses[houseId].CharIdentifier = charidentifier;
-                        Houses[houseId].Furniture = furniture;
-                        Houses[houseId].IsOpen = Convert.ToBoolean(r.open);
-
-                        // Ensure the character owns the house and not just the player
-                        if (source == charidentifier)
-                        {
-                            Houses[houseId].IsOwner = true;
-                        }
+                        HousesDb[houseId].Identifier = identifier;
+                        HousesDb[houseId].CharIdentifier = charidentifier;
+                        HousesDb[houseId].Furniture = furniture;
+                        HousesDb[houseId].IsOpen = Convert.ToBoolean(r.open);
                     }
                 }
 
@@ -192,9 +183,9 @@ namespace VORP.Housing.Server
         {
             try
             {
-                Houses[houseId].IsOpen = state;
-
+                HousesDb[houseId].IsOpen = state;
                 int openState = state ? 1 : 0;
+
                 Export["ghmattimysql"].execute($"UPDATE housing SET open=? WHERE id=?", new object[] { openState, houseId });
 
                 TriggerClientEvent("vorp_housing:SetDoorState", houseId, state);
@@ -219,12 +210,11 @@ namespace VORP.Housing.Server
                 {
                     TriggerEvent("vorp:removeMoney", source, 0, price);
 
-                    Houses[houseId].Identifier = sid;
-                    Houses[houseId].CharIdentifier = charIdentifier;
+                    HousesDb[houseId].Identifier = sid;
+                    HousesDb[houseId].CharIdentifier = charIdentifier;
 
                     Export["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { houseId, sid, charIdentifier, "{}" });
                     TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
-                    player.TriggerEvent("vorp_housing:SetHouseOwner", houseId);
                     player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
                 }
                 else
@@ -251,9 +241,12 @@ namespace VORP.Housing.Server
                 if (money >= price)
                 {
                     TriggerEvent("vorp:removeMoney", source, 0, price);
+
+                    RoomsDb[roomId].Identifier = sid;
+                    RoomsDb[roomId].CharIdentifier = charIdentifier;
+
                     Export["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
                     player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
-                    //player.TriggerEvent("vorp_housing:SetHouseOwner", roomId);
                     player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
                 }
                 else
@@ -273,7 +266,7 @@ namespace VORP.Housing.Server
         {
             try
             {
-                string roomsString = JsonConvert.SerializeObject(Rooms);
+                string roomsString = JsonConvert.SerializeObject(RoomsDb);
                 TriggerClientEvent("vorp_housing:ListRooms", roomsString);
             }
             catch (Exception ex)
@@ -286,7 +279,7 @@ namespace VORP.Housing.Server
         {
             try
             {
-                string housesString = JsonConvert.SerializeObject(Houses);
+                string housesString = JsonConvert.SerializeObject(HousesDb);
                 TriggerClientEvent("vorp_housing:ListHouses", housesString);
             }
             catch (Exception ex)
