@@ -96,7 +96,6 @@ namespace VORP.Housing.Client
                         float invR = (float)houseJson.Inventory[3];
 
                         Vector3 invCoords = new Vector3(invX, invY, invZ);
-
                         if (Vector3.Distance(playerCoords, invCoords) <= invR)
                         {
                             Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
