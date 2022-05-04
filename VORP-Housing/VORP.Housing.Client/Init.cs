@@ -415,13 +415,20 @@ namespace VORP.Housing.Client
         /// <returns></returns>
         private async Task TeleportPlayerWithScreenFadeAsync(float tpX, float tpY, float tpZ, bool shouldSetInstancePlayer)
         {
-            API.DoScreenFadeOut(500);
-            await Delay(600);
-            API.SetEntityCoords(API.PlayerPedId(), tpX, tpY, tpZ, false, false, false, false);
-            await Delay(100);
-            TriggerEvent("vorp:setInstancePlayer", shouldSetInstancePlayer);
-            API.DoScreenFadeIn(500);
-            await Delay(3000);
+            try
+            {
+                API.DoScreenFadeOut(500);
+                await Delay(600);
+                API.SetEntityCoords(API.PlayerPedId(), tpX, tpY, tpZ, false, false, false, false);
+                await Delay(100);
+                TriggerEvent("vorp:setInstancePlayer", shouldSetInstancePlayer);
+                API.DoScreenFadeIn(500);
+                await Delay(3000);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Client.Init.TeleportPlayerWithScreenFadeAsync()");
+            }
         }
         #endregion
 
