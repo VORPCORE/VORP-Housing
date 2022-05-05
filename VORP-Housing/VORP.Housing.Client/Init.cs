@@ -82,18 +82,18 @@ namespace VORP.Housing.Client
                 }
 
                 Vector3 playerCoords = API.GetEntityCoords(API.PlayerPedId(), true, true);
-
                 int interiorEntityId = API.GetInteriorFromEntity(API.PlayerPedId());
-                if (HousesDb.TryGetValue((uint)interiorEntityId, out House house) && !string.IsNullOrEmpty(house.Identifier))
+
+                if (HousesDb.TryGetValue((uint)interiorEntityId, out House house) && house?.CharIdentifier == _charId)
                 {
-                    HouseJson houseJson = _configurationInstance.Config.Houses.FirstOrDefault(x => x.Id == interiorEntityId);
+                    HouseJson houseJson = _configurationInstance.Config.Houses.First(x => x.Id == interiorEntityId);
                     float invX = (float)houseJson.Inventory[0];
                     float invY = (float)houseJson.Inventory[1];
                     float invZ = (float)houseJson.Inventory[2];
                     float invR = (float)houseJson.Inventory[3];
 
                     Vector3 invCoords = new Vector3(invX, invY, invZ);
-                    if (Vector3.Distance(playerCoords, invCoords) <= invR)
+                    if (Vector3.Distance(playerCoords, invCoords) < invR)
                     {
                         Functions.DrawTxt(_configurationInstance.Language.OpenInventory, 0.5f, 0.9f, 0.7f, 0.7f, 255, 255, 255, 255, true, true);
                         if (API.IsControlJustPressed(2, 0xC7B5340A)) // ENTER KEY (modifier key)
@@ -114,7 +114,7 @@ namespace VORP.Housing.Client
                     float invZ = (float)roomJson.Inventory[2];
                     float invR = (float)roomJson.Inventory[3];
 
-                    if (RoomsDb.TryGetValue(roomId, out Room room) && !string.IsNullOrEmpty(room.Identifier))
+                    if (RoomsDb.TryGetValue(roomId, out Room room) && room?.CharIdentifier == _charId)
                     {
                         Vector3 invCoords = new Vector3(invX, invY, invZ);
                         if (Vector3.Distance(playerCoords, invCoords) < invR)
