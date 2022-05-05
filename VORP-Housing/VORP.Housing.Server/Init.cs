@@ -214,7 +214,7 @@ namespace VORP.Housing.Server
                     HousesDb[houseId].CharIdentifier = charIdentifier;
 
                     Export["ghmattimysql"].execute($"INSERT INTO housing (id, identifier, charidentifier, furniture) VALUES (?, ?, ?, ?)", new object[] { houseId, sid, charIdentifier, "{}" });
-                    TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid);
+                    TriggerClientEvent("vorp_housing:UpdateHousesStatus", houseId, sid, charIdentifier);
                     player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
                 }
                 else
@@ -246,7 +246,7 @@ namespace VORP.Housing.Server
                     RoomsDb[roomId].CharIdentifier = charIdentifier;
 
                     Export["ghmattimysql"].execute($"INSERT INTO rooms (interiorId, identifier, charidentifier) VALUES (?, ?, ?)", new object[] { roomId, sid, charIdentifier });
-                    player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid);
+                    player.TriggerEvent("vorp_housing:UpdateRoomsStatus", roomId, sid, charIdentifier);
                     player.TriggerEvent("vorp:TipRight", _configurationInstance.Language.YouBoughtHouse, 4000);
                 }
                 else

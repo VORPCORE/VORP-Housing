@@ -21,8 +21,8 @@ namespace VORP.Housing.Client
 
         public void Initialize()
         {
-            AddEvent("vorp_housing:UpdateHousesStatus", new Action<uint, string>(UpdateHouse));
-            AddEvent("vorp_housing:UpdateRoomsStatus", new Action<int, string>(UpdateRoom));
+            AddEvent("vorp_housing:UpdateHousesStatus", new Action<uint, string, int>(UpdateHouse));
+            AddEvent("vorp_housing:UpdateRoomsStatus", new Action<int, string, int>(UpdateRoom));
             AddEvent("vorp_housing:SetDoorState", new Action<uint, bool>(SetDoorState));
             AddEvent("vorp_housing:ListHouses", new Action<string>(ListHouses));
             AddEvent("vorp_housing:ListRooms", new Action<string>(ListRooms));
@@ -58,14 +58,16 @@ namespace VORP.Housing.Client
             HousesDb[houseId].IsOpen = state;
         }
 
-        private void UpdateHouse(uint houseId, string identifier)
+        private void UpdateHouse(uint houseId, string identifier, int charIdentifier)
         {
             HousesDb[houseId].Identifier = identifier;
+            HousesDb[houseId].CharIdentifier = charIdentifier;
         }
 
-        private void UpdateRoom(int roomId, string identifier)
+        private void UpdateRoom(int roomId, string identifier, int charIdentifier)
         {
             RoomsDb[roomId].Identifier = identifier;
+            RoomsDb[roomId].CharIdentifier = charIdentifier;
         }
         #endregion
 
