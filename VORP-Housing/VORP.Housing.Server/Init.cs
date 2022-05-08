@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using VORP.Housing.Server.Extensions;
 using VORP.Housing.Server.Scripts;
 using VORP.Housing.Shared;
@@ -80,13 +81,7 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                dynamic tableExist = await Export["ghmattimysql"].executeSync(
-                    "SELECT * FROM information_schema.tables " +
-                    "WHERE table_schema = 'vorpv2' AND table_name = 'rooms' " +
-                    "LIMIT 1;", 
-                    new string[] { });
-
-                if (tableExist.Count == 0)
+                if (!await HasSqlTable("rooms"))
                 {
                     Logger.Error("Server.Init.GetRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
                         "Users will not be able to buy rooms unless this table exists");
@@ -131,13 +126,7 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                dynamic tableExist = await Export["ghmattimysql"].executeSync(
-                    "SELECT * FROM information_schema.tables " +
-                    "WHERE table_schema = 'vorpv2' AND table_name = 'housing' " +
-                    "LIMIT 1;", 
-                    new string[] { });
-
-                if (tableExist.Count == 0)
+                if (!await HasSqlTable("housing"))
                 {
                     Logger.Error("Server.Init.GetHousesAsync(): SQL table \"housing\" doesn't exist. " +
                         "Users will not be able to buy houses unless this table exists");
@@ -262,6 +251,24 @@ namespace VORP.Housing.Server
         #endregion
 
         #region Class Methods
+        private async Task<bool> HasSqlTable(string tableName)
+        {
+            // Note: DATABASE() returns the default (current) database name as a string in the utf8 character set.
+            // Reference: https://mariadb.com/kb/en/database/
+            dynamic tableExist = await Export["ghmattimysql"].executeSync(
+                    "SELECT * FROM information_schema.tables " +
+                    $"WHERE table_schema = DATABASE() AND table_name = '{tableName}' " +
+                    "LIMIT 1;",
+                    new string[] { });
+
+            if (tableExist?.Count > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private void TriggerClientListRooms()
         {
             try
