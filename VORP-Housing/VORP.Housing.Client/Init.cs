@@ -21,11 +21,11 @@ namespace VORP.Housing.Client
 
         public void Initialize()
         {
-            AddEvent("vorp_housing:UpdateHousesStatus", new Action<uint, string, int>(UpdateHouse));
-            AddEvent("vorp_housing:UpdateRoomsStatus", new Action<int, string, int>(UpdateRoom));
-            AddEvent("vorp_housing:SetDoorState", new Action<uint, bool>(SetDoorState));
-            AddEvent("vorp_housing:ListHouses", new Action<string>(ListHouses));
-            AddEvent("vorp_housing:ListRooms", new Action<string>(ListRooms));
+            AddEvent("vorp_housing:UpdateHousesStatus", new Action<uint, string, int>(OnUpdatingHouse));
+            AddEvent("vorp_housing:UpdateRoomsStatus", new Action<int, string, int>(OnUpdatingRoom));
+            AddEvent("vorp_housing:SetDoorState", new Action<uint, bool>(OnSettingDoorState));
+            AddEvent("vorp_housing:ListHouses", new Action<string>(OnListingHouses));
+            AddEvent("vorp_housing:ListRooms", new Action<string>(OnListingRooms));
             AddEvent("vorp:SelectedCharacter", new Action<int>((charId) =>
             {
                 TriggerServerEvent("vorp_housing:getHouses", charId);
@@ -42,29 +42,29 @@ namespace VORP.Housing.Client
         #region Private Methods
 
         #region Event Methods
-        private void ListHouses(string json)
+        private void OnListingHouses(string json)
         {
             HousesDb = JsonConvert.DeserializeObject<Dictionary<uint, House>>(json);
             SetBlips();
         }
 
-        private void ListRooms(string json)
+        private void OnListingRooms(string json)
         {
             RoomsDb = JsonConvert.DeserializeObject<Dictionary<int, Room>>(json);
         }
 
-        private void SetDoorState(uint houseId, bool state)
+        private void OnSettingDoorState(uint houseId, bool state)
         {
             HousesDb[houseId].IsOpen = state;
         }
 
-        private void UpdateHouse(uint houseId, string identifier, int charIdentifier)
+        private void OnUpdatingHouse(uint houseId, string identifier, int charIdentifier)
         {
             HousesDb[houseId].Identifier = identifier;
             HousesDb[houseId].CharIdentifier = charIdentifier;
         }
 
-        private void UpdateRoom(int roomId, string identifier, int charIdentifier)
+        private void OnUpdatingRoom(int roomId, string identifier, int charIdentifier)
         {
             RoomsDb[roomId].Identifier = identifier;
             RoomsDb[roomId].CharIdentifier = charIdentifier;

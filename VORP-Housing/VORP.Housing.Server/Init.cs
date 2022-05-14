@@ -19,11 +19,11 @@ namespace VORP.Housing.Server
         
         public void Initialize()
         {
-            AddEvent("vorp_housing:BuyHouse", new Action<Player, uint, double>(BuyHouseAsync));
-            AddEvent("vorp_housing:BuyRoom", new Action<Player, int, double>(BuyRoomAsync));
-            AddEvent("vorp_housing:changeDoorState", new Action<uint, bool>(ChangeDoorState));
-            AddEvent("vorp_housing:getRooms", new Action<int>(GetRoomsAsync));
-            AddEvent("vorp_housing:getHouses", new Action<int>(GetHousesAsync));
+            AddEvent("vorp_housing:BuyHouse", new Action<Player, uint, double>(OnBuyingHouseAsync));
+            AddEvent("vorp_housing:BuyRoom", new Action<Player, int, double>(OnBuyingRoomAsync));
+            AddEvent("vorp_housing:changeDoorState", new Action<uint, bool>(OnChangingDoorState));
+            AddEvent("vorp_housing:getRooms", new Action<int>(OnGettingRoomsAsync));
+            AddEvent("vorp_housing:getHouses", new Action<int>(OnGettingHousesAsync));
         }
 
         #region Public Method
@@ -68,14 +68,14 @@ namespace VORP.Housing.Server
         #region Private Methods
 
         #region Event Methods
-        private async void GetRoomsAsync(int source)
+        private async void OnGettingRoomsAsync(int source)
         {
             try
             {
                 Player player = PlayerList[source];
                 if (player == null)
                 {
-                    Logger.Error($"Server.Init.GetRoomsAsync(): Player \"{source}\" does not exist.");
+                    Logger.Error($"Server.Init.OnGettingRoomsAsync(): Player \"{source}\" does not exist.");
 
                     TriggerClientListRooms(); // return default list
                     return;
@@ -83,7 +83,7 @@ namespace VORP.Housing.Server
 
                 if (!await HasSqlTable("rooms"))
                 {
-                    Logger.Error("Server.Init.GetRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
+                    Logger.Error("Server.Init.OnGettingRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
                         "Users will not be able to buy rooms unless this table exists");
 
                     TriggerClientListRooms(); // return default list
@@ -110,25 +110,25 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.GetRoomsAsync()");
+                Logger.Error(ex, $"Server.Init.OnGettingRoomsAsync()");
             }
         }
 
-        private async void GetHousesAsync(int source)
+        private async void OnGettingHousesAsync(int source)
         {
             try
             {
                 Player player = PlayerList[source];
                 if (player == null)
                 {
-                    Logger.Error($"Server.Init.GetHousesAsync(): Player \"{source}\" does not exist.");
+                    Logger.Error($"Server.Init.OnGettingHousesAsync(): Player \"{source}\" does not exist.");
                     TriggerClientListHouses(); // return default list
                     return;
                 }
 
                 if (!await HasSqlTable("housing"))
                 {
-                    Logger.Error("Server.Init.GetHousesAsync(): SQL table \"housing\" doesn't exist. " +
+                    Logger.Error("Server.Init.OnGettingHousesAsync(): SQL table \"housing\" doesn't exist. " +
                         "Users will not be able to buy houses unless this table exists");
 
                     TriggerClientListHouses(); // return default list
@@ -164,11 +164,11 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.GetHousesAsync()");
+                Logger.Error(ex, $"Server.Init.OnGettingHousesAsync()");
             }
         }
 
-        private void ChangeDoorState(uint houseId, bool state)
+        private void OnChangingDoorState(uint houseId, bool state)
         {
             try
             {
@@ -181,11 +181,11 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.ChangeDoorState()");
+                Logger.Error(ex, $"Server.Init.OnChangingDoorState()");
             }
         }
 
-        private async void BuyHouseAsync([FromSource]Player player, uint houseId, double price)
+        private async void OnBuyingHouseAsync([FromSource]Player player, uint houseId, double price)
         {
             try
             {
@@ -213,11 +213,11 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.BuyHouseAsync()");
+                Logger.Error(ex, $"Server.Init.OnBuyingHouseAsync()");
             }
         }
 
-        private async void BuyRoomAsync([FromSource] Player player, int roomId, double price)
+        private async void OnBuyingRoomAsync([FromSource] Player player, int roomId, double price)
         {
             try
             {
@@ -245,7 +245,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.BuyRoomAsync()");
+                Logger.Error(ex, $"Server.Init.OnBuyingRoomAsync()");
             }
         }
         #endregion
