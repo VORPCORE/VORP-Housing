@@ -7,7 +7,7 @@ using VORP.Housing.Shared;
 
 namespace VORP.Housing.Server
 {
-    public class HouseInventory : Manager
+    public class HouseInventoryApi : Manager
     {
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
 
@@ -58,7 +58,7 @@ namespace VORP.Housing.Server
                 {
                     int weaponId = data["item"]["id"].ToObject<int>();
 
-                    if (Init.RoomsDb.ContainsKey(houseId))
+                    if (GeneralApi.RoomsDb.ContainsKey(houseId))
                     {
                         Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                         {
@@ -205,7 +205,7 @@ namespace VORP.Housing.Server
                             return;
                         }
 
-                        if (Init.RoomsDb.ContainsKey(houseId))
+                        if (GeneralApi.RoomsDb.ContainsKey(houseId))
                         {
                             Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                             {
@@ -354,7 +354,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.TakeFromHouseAsync()");
+                Logger.Error(ex, $"Server.HouseInventoryApi.TakeFromHouseAsync()");
             }
         }
 
@@ -402,7 +402,7 @@ namespace VORP.Housing.Server
                     return;
                 }
 
-                if (Init.RoomsDb.ContainsKey(houseId))
+                if (GeneralApi.RoomsDb.ContainsKey(houseId))
                 {
                     Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, houseId }, new Action<dynamic>((result) =>
                     {
@@ -424,7 +424,7 @@ namespace VORP.Housing.Server
                                     totalWeight += hd["count"].ToObject<int>();
                                 }
 
-                                int maxWeight = Init.RoomsDb[houseId].MaxWeight;
+                                int maxWeight = GeneralApi.RoomsDb[houseId].MaxWeight;
 
                                 if (type.Contains("item_weapon"))
                                 {
@@ -556,7 +556,7 @@ namespace VORP.Housing.Server
                                     totalWeight += hd["count"].ToObject<int>();
                                 }
 
-                                int maxWeight = Init.HousesDb[(uint)houseId].MaxWeight;
+                                int maxWeight = GeneralApi.HousesDb[(uint)houseId].MaxWeight;
 
                                 if (type.Contains("item_weapon"))
                                 {
@@ -668,7 +668,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.MoveToHouseAsync()");
+                Logger.Error(ex, $"Server.HouseInventoryApi.MoveToHouseAsync()");
             }
         }
 
@@ -680,7 +680,7 @@ namespace VORP.Housing.Server
                 int source = int.Parse(player.Handle);
                 int charIdentifier = await player.GetCoreUserCharacterIdAsync();
 
-                if (Init.RoomsDb.ContainsKey(interiorId))
+                if (GeneralApi.RoomsDb.ContainsKey(interiorId))
                 {
                     Export["ghmattimysql"].execute("SELECT * FROM rooms WHERE identifier=? AND charidentifier=? AND interiorId=?", new object[] { sid, charIdentifier, interiorId }, new Action<dynamic>((result) =>
                     {
@@ -739,7 +739,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.UpdateInventoryHouseAsync()");
+                Logger.Error(ex, $"Server.HouseInventoryApi.UpdateInventoryHouseAsync()");
             }
         }
         #endregion

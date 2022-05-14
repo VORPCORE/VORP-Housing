@@ -10,7 +10,7 @@ using VORP.Housing.Shared.Models.Json;
 
 namespace VORP.Housing.Client
 {
-    public class Init : Manager
+    public class ClientMain : Manager
     {
         private int _charId = 0;
         private bool _isInRoom = false;

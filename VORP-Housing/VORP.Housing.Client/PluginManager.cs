@@ -12,7 +12,7 @@ namespace VORP.Housing.Client
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
 
         public static PluginManager Instance { get; private set; }
-        public Init Init = new();
+        public ClientMain Main = new();
 
         public PluginManager()
         {
@@ -25,7 +25,7 @@ namespace VORP.Housing.Client
                 _configurationInstance.LoadConfig();
 
                 // control the start up order of each script
-                Init.Initialize();
+                Main.Initialize();
 
                 Logger.Info("VORP Housing client loaded");
             }

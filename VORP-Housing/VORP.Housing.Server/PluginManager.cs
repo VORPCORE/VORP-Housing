@@ -18,12 +18,9 @@ namespace VORP.Housing.Server
         public PlayerList PlayerList => Players;
         public ExportDictionary ExportRegistry => Exports;
 
-        // Database
-        //public static Database.ItemDatabase ItemsDB = new();
-
         // private scripts
-        public static Init Init = new();
-        public static HouseInventory HouseInventory = new();
+        public static GeneralApi GeneralApi = new();
+        public static HouseInventoryApi HouseInventoryApi = new();
 
         public static Dictionary<string, int> ActiveCharacters = new();
 
@@ -84,10 +81,9 @@ namespace VORP.Housing.Server
                 _configurationInstance.LoadConfig();
 
                 // control the start up order of each script
-                //ItemsDB.Init();
-                Init.Initialize();
-                Init.LoadAll();
-                HouseInventory.Initialize();
+                GeneralApi.Initialize();
+                GeneralApi.LoadAll();
+                HouseInventoryApi.Initialize();
 
                 AddEvents();
             }

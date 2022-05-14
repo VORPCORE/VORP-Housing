@@ -61,8 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\PlayerExtensions.cs" />
-    <Compile Include="HouseInventory.cs" />
-    <Compile Include="Init.cs" />
+    <Compile Include="HouseInventoryApi.cs" />
+    <Compile Include="GeneralApi.cs" />
     <Compile Include="PluginManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripts\Manager.cs" />

@@ -10,7 +10,7 @@ using VORP.Housing.Shared.Models.Json;
 
 namespace VORP.Housing.Server
 {
-    public class Init : Manager
+    public class GeneralApi : Manager
     {
         private readonly ConfigurationSingleton _configurationInstance = ConfigurationSingleton.Instance;
 
@@ -60,7 +60,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.LoadAll()");
+                Logger.Error(ex, $"Server.GeneralApi.LoadAll()");
             }
         }
         #endregion
@@ -75,7 +75,7 @@ namespace VORP.Housing.Server
                 Player player = PlayerList[source];
                 if (player == null)
                 {
-                    Logger.Error($"Server.Init.OnGettingRoomsAsync(): Player \"{source}\" does not exist.");
+                    Logger.Error($"Server.GeneralApi.OnGettingRoomsAsync(): Player \"{source}\" does not exist.");
 
                     TriggerClientListRooms(); // return default list
                     return;
@@ -83,7 +83,7 @@ namespace VORP.Housing.Server
 
                 if (!await HasSqlTable("rooms"))
                 {
-                    Logger.Error("Server.Init.OnGettingRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
+                    Logger.Error("Server.GeneralApi.OnGettingRoomsAsync(): SQL table \"rooms\" doesn't exist. " +
                         "Users will not be able to buy rooms unless this table exists");
 
                     TriggerClientListRooms(); // return default list
@@ -110,7 +110,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.OnGettingRoomsAsync()");
+                Logger.Error(ex, $"Server.GeneralApi.OnGettingRoomsAsync()");
             }
         }
 
@@ -121,14 +121,14 @@ namespace VORP.Housing.Server
                 Player player = PlayerList[source];
                 if (player == null)
                 {
-                    Logger.Error($"Server.Init.OnGettingHousesAsync(): Player \"{source}\" does not exist.");
+                    Logger.Error($"Server.GeneralApi.OnGettingHousesAsync(): Player \"{source}\" does not exist.");
                     TriggerClientListHouses(); // return default list
                     return;
                 }
 
                 if (!await HasSqlTable("housing"))
                 {
-                    Logger.Error("Server.Init.OnGettingHousesAsync(): SQL table \"housing\" doesn't exist. " +
+                    Logger.Error("Server.GeneralApi.OnGettingHousesAsync(): SQL table \"housing\" doesn't exist. " +
                         "Users will not be able to buy houses unless this table exists");
 
                     TriggerClientListHouses(); // return default list
@@ -164,7 +164,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.OnGettingHousesAsync()");
+                Logger.Error(ex, $"Server.GeneralApi.OnGettingHousesAsync()");
             }
         }
 
@@ -181,7 +181,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.OnChangingDoorState()");
+                Logger.Error(ex, $"Server.GeneralApi.OnChangingDoorState()");
             }
         }
 
@@ -213,7 +213,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.OnBuyingHouseAsync()");
+                Logger.Error(ex, $"Server.GeneralApi.OnBuyingHouseAsync()");
             }
         }
 
@@ -245,7 +245,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.OnBuyingRoomAsync()");
+                Logger.Error(ex, $"Server.GeneralApi.OnBuyingRoomAsync()");
             }
         }
         #endregion
@@ -278,7 +278,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.TriggerClientListRooms()");
+                Logger.Error(ex, $"Server.GeneralApi.TriggerClientListRooms()");
             }
         }
 
@@ -291,7 +291,7 @@ namespace VORP.Housing.Server
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Server.Init.TriggerClientListHouses()");
+                Logger.Error(ex, $"Server.GeneralApi.TriggerClientListHouses()");
             }
         }
 
