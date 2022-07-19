@@ -692,7 +692,7 @@ namespace VORP.Housing.Server
 
                             if (string.IsNullOrEmpty(inventory))
                             {
-                                items.Add("itemList", "[]");
+                                items.Add("itemList", new JArray());
                                 items.Add("action", "setSecondInventoryItems");
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
@@ -720,7 +720,7 @@ namespace VORP.Housing.Server
 
                             if (string.IsNullOrEmpty(inventory))
                             {
-                                items.Add("itemList", "[]");
+                                items.Add("itemList", new JArray());
                                 items.Add("action", "setSecondInventoryItems");
 
                                 player.TriggerEvent("vorp_inventory:ReloadHouseInventory", items.ToString());
