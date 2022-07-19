@@ -348,3 +348,4 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+VORP-Housing/build/vorp_housing/CitizenFX.Core.dll
