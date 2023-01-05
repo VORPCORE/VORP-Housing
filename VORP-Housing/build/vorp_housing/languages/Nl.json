@@ -1,0 +1,16 @@
+﻿{
+  "PressToBuy": "Huis te koop\n~COLOR_GREEN~{0}$~q~\nDruk op~e~[ENTER]~q~ om het huis te kopen",
+  "PressToBuyRoom": "Kamer te koop\n~COLOR_GREEN~{0}$~q~\nDruk op ~e~[ENTER]~q~ om de kamer te kopen",
+  "NoMoney": "Je hebt niet genoeg geld,",
+  "YouBoughtHouse": "U bent nu eigenaar van dit pand.",
+  "PressToOpen": "~e~Deur gesloten\n~q~Druk op ~e~[ENTER]~q~ om de deur te openen",
+  "PressToClose": "~COLOR_GREEN~Deur open\n~q~Druk op ~e~[ENTER]~q~ om de deur te sluiten",
+  "PressToEnter": "~COLOR_GREEN~Log in\n~q~Druk op ~e~[ENTER]~q~ om binnen te gaan",
+  "PressToLeave": "Druk op [ENTER] om buiten te gaan",
+  "OpenInventory": "Druk op ~e~[ENTER]~q~ voor de inventaris",
+  "ErrorQuantity": "Verkeerde hoeveelheid",
+  "WeaponsNotAllowed": "Wapens kunnen nog niet worden opgeslagen in de inventaris van het voertuig",
+  "ItemInBlacklist": "Dit artikel kan niet worden overgedragen",
+  "MaxWeightQuantity": "U overschrijdt het maximale gewicht {0}/{1}"
+
+}
